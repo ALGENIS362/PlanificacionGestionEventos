@@ -2,13 +2,20 @@
 
 <h2>Invitaciones</h2>
 
+<p>
+    <a asp-action="Create" class="btn btn-primary">
+        Crear Invitación
+    </a>
+</p>
+
 <table class="table">
+
     <thead>
         <tr>
-            <th>Evento</th>
             <th>Correo Invitado</th>
+            <th>Evento</th>
             <th>Estado</th>
-            <th></th>
+            <th>Acciones</th>
         </tr>
     </thead>
 
@@ -17,14 +24,24 @@
         @foreach (var item in Model)
         {
             <tr>
-                <td>@item.Evento?.Nombre</td>
+
                 <td>@item.CorreoInvitado</td>
+                <td>@item.Evento?.Nombre</td>
                 <td>@item.Estado</td>
+
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.InvitacionId">Editar</a>
+
+                    <a asp-action="Delete"
+                       asp-route-id="@item.InvitacionId"
+                       class="btn btn-danger">
+                        Eliminar
+                    </a>
+
                 </td>
+
             </tr>
         }
 
     </tbody>
+
 </table>

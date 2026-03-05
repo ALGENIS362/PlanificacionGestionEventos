@@ -1,20 +1,36 @@
 ﻿@model PlanificacionGestionEventos.Models.Invitacion
 
-<h2>Invitar persona</h2>
+<h2>Crear Invitación</h2>
 
 <form asp-action="Create">
 
-    <input type="hidden" asp-for="EventoId" />
-
-    <div>
-        <label>Correo del invitado</label>
+    <div class="form-group">
+        <label>Correo Invitado</label>
         <input asp-for="CorreoInvitado" class="form-control" />
     </div>
 
     <br />
 
+    <div class="form-group">
+        <label>Evento</label>
+
+        <select asp-for="EventoId" class="form-control">
+
+            @foreach (var evento in ViewBag.Eventos)
+            {
+                <option value="@evento.EventoId">
+                    @evento.Nombre
+                </option>
+            }
+
+        </select>
+
+    </div>
+
+    <br />
+
     <button type="submit" class="btn btn-primary">
-        Enviar invitación
+        Guardar
     </button>
 
 </form>

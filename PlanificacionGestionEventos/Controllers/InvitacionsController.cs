@@ -5,58 +5,56 @@ using PlanificacionGestionEventos.Models;
 
 namespace PlanificacionGestionEventos.Controllers
 {
-    public class InvitacionController : Controller
+    public class InvitacionsController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public InvitacionController(ApplicationDbContext context)
+        public InvitacionsController(ApplicationDbContext context)
         {
             _context = context;
         }
 
+        // LISTAR INVITACIONES
         public async Task<IActionResult> Index()
         {
-            var invitaciones = _context.Invitaciones
+            var invitaciones = await _context.Invitaciones
                 .Include(i => i.Evento)
-                .Include(i => i.Usuario);
+                .Include(i => i.Usuario)
+                .ToListAsync();
 
-            return View(await invitaciones.ToListAsync());
+            return View(invitaciones);
         }
 
-        public IActionResult Create(int eventoId)
+        // FORMULARIO CREAR
+        public IActionResult Create()
         {
-            Invitacion invitacion = new Invitacion
-            {
-                EventoId = eventoId,
-                Estado = EstadoRSVP.Pendiente
-            };
-
-            return View(invitacion);
+            ViewBag.Eventos = _context.Eventos.ToList();
+            return View();
         }
 
+        // GUARDAR INVITACION
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Invitacion invitacion)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(invitacion);
+                _context.Invitaciones.Add(invitacion);
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("Index", "Evento");
+                return RedirectToAction("Index");
             }
 
             return View(invitacion);
         }
 
+        // EDITAR RSVP
         public async Task<IActionResult> Edit(int id)
         {
             var invitacion = await _context.Invitaciones.FindAsync(id);
 
             if (invitacion == null)
-            {
                 return NotFound();
-            }
 
             return View(invitacion);
         }
@@ -66,9 +64,7 @@ namespace PlanificacionGestionEventos.Controllers
         public async Task<IActionResult> Edit(int id, Invitacion invitacion)
         {
             if (id != invitacion.InvitacionId)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
@@ -81,6 +77,7 @@ namespace PlanificacionGestionEventos.Controllers
             return View(invitacion);
         }
 
+        // ELIMINAR
         public async Task<IActionResult> Delete(int id)
         {
             var invitacion = await _context.Invitaciones
@@ -88,9 +85,7 @@ namespace PlanificacionGestionEventos.Controllers
                 .FirstOrDefaultAsync(m => m.InvitacionId == id);
 
             if (invitacion == null)
-            {
                 return NotFound();
-            }
 
             return View(invitacion);
         }

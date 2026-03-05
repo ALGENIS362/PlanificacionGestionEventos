@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2>Dashboard</h2>
+<p>Resumen de tu actividad de eventos</p>
+
+<div class="row mt-4">
+
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Usuarios</h5>
+                <h2>@ViewBag.TotalUsuarios</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Eventos</h5>
+                <h2>@ViewBag.TotalEventos</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Invitaciones</h5>
+                <h2>@ViewBag.TotalInvitaciones</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Confirmados</h5>
+                <h2>@ViewBag.Confirmados</h2>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -15,6 +15,7 @@ namespace PlanificacionGestionEventos.Controllers
 
         public IActionResult Index()
         {
+            ViewData["Title"] = "Dashboard"; // Aquí le dices al layout que esta sección está activa
             return View();
         }
 
