@@ -1,7 +1,6 @@
 ﻿@model IEnumerable<PlanificacionGestionEventos.Models.Evento>
 
 <style>
-
     .container-eventos {
         background: white;
         padding: 25px;
@@ -9,87 +8,81 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
-    .titulo {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-        .titulo h1 {
-            font-size: 24px;
-            margin: 0;
-        }
-
     .btn-crear {
         background: #2563eb;
         color: white;
+        border: none;
         padding: 10px 15px;
         border-radius: 6px;
-        text-decoration: none;
-        font-weight: bold;
+        margin-bottom: 20px;
+        cursor: pointer;
     }
 
         .btn-crear:hover {
             background: #1d4ed8;
         }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
+    .filtros {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
     }
 
-        table thead {
-            background: #0f172a;
-            color: white;
+    .filter-btn {
+        background: #f1f5f9;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+        .filter-btn:hover {
+            background: #e2e8f0;
         }
 
-        table th {
-            padding: 12px;
-            text-align: left;
-            font-size: 14px;
+    .grid-eventos {
+        display: grid;
+        grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+        gap: 20px;
+    }
+
+    .card-evento {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-left: 5px solid #2563eb;
+    }
+
+        .card-evento h3 {
+            margin-bottom: 10px;
+            color: #0f172a;
         }
 
-        table td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        table tr:hover {
-            background: #f1f5f9;
-        }
-
-    .acciones a {
-        text-decoration: none;
-        padding: 6px 10px;
-        border-radius: 5px;
-        margin-right: 5px;
-        font-size: 13px;
-        color: white;
+    .info {
+        font-size: 14px;
+        margin-bottom: 5px;
     }
 
-    .edit {
-        background: #22c55e;
+    .descripcion {
+        font-size: 14px;
+        color: #555;
+        margin-top: 10px;
     }
 
-    .details {
-        background: #0ea5e9;
+    .categoria {
+        background: #e0f2fe;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        display: inline-block;
+        margin-top: 10px;
     }
 
-    .delete {
-        background: #ef4444;
-    }
-
-    .edit:hover {
-        background: #16a34a;
-    }
-
-    .details:hover {
-        background: #0284c7;
-    }
-
-    .delete:hover {
-        background: #dc2626;
+    .no-eventos {
+        text-align: center;
+        padding: 50px;
+        color: #777;
     }
 
 </style>
@@ -102,37 +95,62 @@
         + Crear Evento
     </button>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Lugar</th>
-            </tr>
-        </thead>
+    <div class="filtros">
+        <button class="filter-btn" onclick="filterEvents('all')">Todos</button>
+        <button class="filter-btn" onclick="filterEvents('Socio')">Activos</button>
+        <button class="filter-btn" onclick="filterEvents('Negocios')">Completados</button>
+        <button class="filter-btn" onclick="filterEvents('Boda')">Cancelados</button>
+    </div>
 
-        <tbody>
-            @if (Model != null)
+    <div id="events-grid" class="grid-eventos">
+
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
             {
-                foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@item.Nombre</td>
-                        <td>@item.Fecha.ToShortDateString()</td>
-                        <td>@item.Hora</td>
-                        <td>@item.Lugar</td>
-                    </tr>
-                }
+                <div class="card-evento" data-category="@item.Categoria">
+
+                    <h3>@item.Nombre</h3>
+
+                    <p class="info"><strong>Fecha:</strong> @item.Fecha.ToShortDateString()</p>
+                    <p class="info"><strong>Hora:</strong> @item.Hora</p>
+                    <p class="info"><strong>Lugar:</strong> @item.Lugar</p>
+                    <p class="info"><strong>Máx Invitados:</strong> @item.MaximoInvitados</p>
+                    <p class="descripcion">@item.Descripcion</p>
+                    <span class="categoria">@item.Categoria</span>
+
+                </div>
             }
-        </tbody>
-
-    </table>
-
+        }
+        else
+        {
+            <div class="no-eventos">
+                <h3>No hay eventos</h3>
+                <p>Crea tu primer evento para comenzar</p>
+            </div>
+        }
+    </div>
 </div>
 
+<script>
 
-<!-- VENTANA MODAL -->
+    function filterEvents(category){
+    let eventos = document.querySelectorAll(".card-evento");
+    eventos.forEach(function(evento){
+    let cat = evento.getAttribute("data-category");
+    if(category === "all" || cat === category){
+    evento.style.display = "block";
+
+    }else{
+
+    evento.style.display = "none";
+
+    }
+   });
+  }
+
+</script>
+
 <div class="modal fade" id="crearEventoModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -145,7 +163,6 @@
             <div class="modal-body">
 
                 <form asp-action="Create">
-
                     <div class="mb-3">
                         <label>Nombre del Evento</label>
                         <input name="Nombre" class="form-control" />
@@ -158,7 +175,7 @@
 
                     <div class="mb-3">
                         <label>Hora</label>
-                        <input name="Hora" class="form-control" />
+                        <input type="time" name="Hora" class="form-control" />
                     </div>
 
                     <div class="mb-3">
@@ -168,10 +185,9 @@
 
                     <div class="mb-3">
                         <label>Descripción</label>
-                        <input name="Descripcion" class="form-control" />
+                        <textarea name="Descripcion" class="form-control"></textarea>
                     </div>
 
-                    <!-- NUEVO CAMPO CATEGORIA -->
                     <div class="mb-3">
                         <label>Categoría</label>
                         <select name="Categoria" class="form-control">
@@ -184,7 +200,6 @@
                         </select>
                     </div>
 
-                    <!-- NUEVO CAMPO MAXIMO INVITADOS -->
                     <div class="mb-3">
                         <label>Máximo de Invitados</label>
                         <input type="number" name="MaximoInvitados" class="form-control" />
@@ -198,9 +213,7 @@
                         <a asp-action="Index">Cancelar</a>
                     </div>
                 </form>
-
             </div>
-
         </div>
     </div>
 </div>
