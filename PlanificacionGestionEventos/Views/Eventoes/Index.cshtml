@@ -1,73 +1,206 @@
 ﻿@model IEnumerable<PlanificacionGestionEventos.Models.Evento>
 
-@{
-    Layout = null;
-}
+<style>
 
-<!DOCTYPE html>
+    .container-eventos {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Index</title>
-</head>
-<body>
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Nombre)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Fecha)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Hora)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Lugar)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Descripcion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Organizador)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Nombre)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fecha)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Hora)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Lugar)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Descripcion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Organizador.Email)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.EventoId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.EventoId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.EventoId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
-</body>
-</html>
+    .titulo {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+        .titulo h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+    .btn-crear {
+        background: #2563eb;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        .btn-crear:hover {
+            background: #1d4ed8;
+        }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        table thead {
+            background: #0f172a;
+            color: white;
+        }
+
+        table th {
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        table tr:hover {
+            background: #f1f5f9;
+        }
+
+    .acciones a {
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: 5px;
+        margin-right: 5px;
+        font-size: 13px;
+        color: white;
+    }
+
+    .edit {
+        background: #22c55e;
+    }
+
+    .details {
+        background: #0ea5e9;
+    }
+
+    .delete {
+        background: #ef4444;
+    }
+
+    .edit:hover {
+        background: #16a34a;
+    }
+
+    .details:hover {
+        background: #0284c7;
+    }
+
+    .delete:hover {
+        background: #dc2626;
+    }
+
+</style>
+
+<div class="container-eventos">
+
+    <h1>Gestión de Eventos</h1>
+
+    <button class="btn-crear" data-bs-toggle="modal" data-bs-target="#crearEventoModal">
+        + Crear Evento
+    </button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Lugar</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Nombre</td>
+                        <td>@item.Fecha.ToShortDateString()</td>
+                        <td>@item.Hora</td>
+                        <td>@item.Lugar</td>
+                    </tr>
+                }
+            }
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- VENTANA MODAL -->
+<div class="modal fade" id="crearEventoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Crear Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <form asp-action="Create">
+
+                    <div class="mb-3">
+                        <label>Nombre del Evento</label>
+                        <input name="Nombre" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Fecha</label>
+                        <input name="Fecha" type="date" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Hora</label>
+                        <input name="Hora" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Lugar</label>
+                        <input name="Lugar" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Descripción</label>
+                        <input name="Descripcion" class="form-control" />
+                    </div>
+
+                    <!-- NUEVO CAMPO CATEGORIA -->
+                    <div class="mb-3">
+                        <label>Categoría</label>
+                        <select name="Categoria" class="form-control">
+                            <option value="">Seleccione</option>
+                            <option value="Socio">Socio</option>
+                            <option value="Negocios">Negocios</option>
+                            <option value="Boda">Boda</option>
+                            <option value="Cumpleaños">Cumpleaños</option>
+                            <option value="Reunión">Reunión</option>
+                        </select>
+                    </div>
+
+                    <!-- NUEVO CAMPO MAXIMO INVITADOS -->
+                    <div class="mb-3">
+                        <label>Máximo de Invitados</label>
+                        <input type="number" name="MaximoInvitados" class="form-control" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Guardar Evento
+                    </button>
+
+                    <div>
+                        <a asp-action="Index">Cancelar</a>
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>

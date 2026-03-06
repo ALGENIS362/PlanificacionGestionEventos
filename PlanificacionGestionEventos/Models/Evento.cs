@@ -23,6 +23,9 @@ namespace PlanificacionGestionEventos.Models
 
         [MaxLength(500)]
         public string? Descripcion { get; set; }
+        [Required]
+        public string? Categoria { get; set; }
+        public int MaximoInvitados { get; set; }
 
         public int OrganizadorId { get; set; }
 

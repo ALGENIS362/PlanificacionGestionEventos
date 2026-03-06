@@ -1,61 +1,63 @@
 ﻿@model IEnumerable<PlanificacionGestionEventos.Models.Usuario>
 
-@{
-    Layout = null;
-}
+<div class="container">
 
-<!DOCTYPE html>
+    <h2>Gestión de Usuarios</h2>
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Index</title>
-</head>
-<body>
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.NombreCompleto)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Telefono)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PasswordHash)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.NombreCompleto)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Telefono)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PasswordHash)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.UsuarioId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.UsuarioId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.UsuarioId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
-</body>
-</html>
+    <a asp-action="Create" class="btn btn-primary mb-3">
+        Crear Usuario
+    </a>
+
+    <table class="table table-striped">
+
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Password</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+
+                        <td>@item.NombreCompleto</td>
+
+                        <td>@item.Email</td>
+
+                        <td>@item.Telefono</td>
+
+                        <td>@item.PasswordHash</td>
+
+                        <td>
+
+                            <a asp-action="Edit" asp-route-id="@item.UsuarioId" class="btn btn-success btn-sm">
+                                Editar
+                            </a>
+
+                            <a asp-action="Details" asp-route-id="@item.UsuarioId" class="btn btn-info btn-sm">
+                                Detalles
+                            </a>
+
+                            <a asp-action="Delete" asp-route-id="@item.UsuarioId" class="btn btn-danger btn-sm">
+                                Eliminar
+                            </a>
+
+                        </td>
+
+                    </tr>
+                }
+            }
+
+        </tbody>
+
+    </table>
+
+</div>

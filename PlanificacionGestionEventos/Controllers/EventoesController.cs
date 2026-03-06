@@ -53,7 +53,7 @@ namespace PlanificacionGestionEventos.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EventoId,Nombre,Fecha,Hora,Lugar,Descripcion,OrganizadorId")] Evento evento)
+        public async Task<IActionResult> Create([Bind("EventoId,Nombre,Fecha,Hora,Lugar,Descripcion,Categoria,MaximoInvitados,OrganizadorId")] Evento evento)
         {
             if (ModelState.IsValid)
             {
@@ -61,6 +61,7 @@ namespace PlanificacionGestionEventos.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["OrganizadorId"] = new SelectList(_context.Usuarios, "UsuarioId", "Email", evento.OrganizadorId);
             return View(evento);
         }
@@ -87,7 +88,7 @@ namespace PlanificacionGestionEventos.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EventoId,Nombre,Fecha,Hora,Lugar,Descripcion,OrganizadorId")] Evento evento)
+        public async Task<IActionResult> Edit(int id, [Bind("EventoId,Nombre,Fecha,Hora,Lugar,Descripcion,Categoria,MaximoInvitados,OrganizadorId")] Evento evento)
         {
             if (id != evento.EventoId)
             {
