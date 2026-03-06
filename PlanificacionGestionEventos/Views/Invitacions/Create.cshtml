@@ -1,36 +1,131 @@
 ﻿@model PlanificacionGestionEventos.Models.Invitacion
 
-<h2>Crear Invitación</h2>
 
-<form asp-action="Create">
+<style>
 
-    <div class="form-group">
-        <label>Correo Invitado</label>
-        <input asp-for="CorreoInvitado" class="form-control" />
+    .container-invitados {
+        padding: 30px;
+    }
+
+    .titulo {
+        font-size: 28px;
+        font-weight: bold;
+        color: #0f172a;
+    }
+
+    .subtitulo {
+        color: #64748b;
+        margin-bottom: 20px;
+    }
+
+    .card-form {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        max-width: 500px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+        .form-group label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+    }
+
+    .botones {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-guardar {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+        .btn-guardar:hover {
+            background: #1d4ed8;
+        }
+
+    .btn-cancelar {
+        background: #e2e8f0;
+        padding: 10px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: black;
+    }
+
+        .btn-cancelar:hover {
+            background: #cbd5e1;
+        }
+
+</style>
+
+<div class="container-invitados">
+
+    <div class="header-create">
+        <div>
+            <h2 class="titulo">Nueva Invitación</h2>
+            <p class="subtitulo">Agrega un invitado a tu evento</p>
+        </div>
     </div>
 
-    <br />
+    <div class="card-form">
 
-    <div class="form-group">
-        <label>Evento</label>
+        <form asp-action="Create">
 
-        <select asp-for="EventoId" class="form-control">
+            <div class="form-group">
+                <label>Nombre del Invitado</label>
+                <input asp-for="CorreoInvitado" class="form-control" placeholder="correo@email.com" />
+            </div>
+            <div class="form-group">
+                <label>Correo del Invitado</label>
+                <input asp-for="CorreoInvitado" class="form-control" placeholder="correo@email.com" />
+            </div>
 
-            @foreach (var evento in ViewBag.Eventos)
-            {
-                <option value="@evento.EventoId">
-                    @evento.Nombre
-                </option>
-            }
+            <div class="form-group">
+                <label>Evento</label>
+                <select asp-for="EventoId" class="form-control" asp-items="ViewBag.EventoId"></select>
+            </div>
 
-        </select>
+            <div class="form-group">
+                <label>Estado</label>
+                <select asp-for="Estado" class="form-control">
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Confirmado">Confirmado</option>
+                    <option value="Rechazado">Rechazado</option>
+                </select>
+            </div>
+
+            <div class="botones">
+
+                <button type="submit" class="btn-guardar">
+                    <i class="bi bi-check-circle"></i> Guardar
+                </button>
+
+                <a asp-action="Index" class="btn-cancelar">
+                    Cancelar
+                </a>
+
+            </div>
+
+        </form>
 
     </div>
 
-    <br />
-
-    <button type="submit" class="btn btn-primary">
-        Guardar
-    </button>
-
-</form>
+</div>
