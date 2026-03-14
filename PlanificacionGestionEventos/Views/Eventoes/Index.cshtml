@@ -1,6 +1,11 @@
 ﻿@model IEnumerable<PlanificacionGestionEventos.Models.Evento>
 
 <style>
+
+    body {
+        background: #0f172a;
+        color: white;
+    }
     .container-eventos {
         background: white;
         padding: 25px;
@@ -10,7 +15,7 @@
 
     .btn-crear {
         background: #2563eb;
-        color: white;
+        color: #0f172a;
         border: none;
         padding: 10px 15px;
         border-radius: 6px;
@@ -82,16 +87,14 @@
     .no-eventos {
         text-align: center;
         padding: 50px;
-        color: #777;
+        color: #94a3b8;
     }
 
 </style>
 
-<div class="container-eventos">
-
     <div>
-        <h2 class="text-3xl font-bold mb-2">Mis Eventos</h2>
-        <p class="text-slate-400">Gestiona todos tus eventos</p>
+        <h2 class="text-3xl font-bold mb-2 text-white">Mis Eventos</h2>
+        <p class="text-secondary">Gestiona todos tus eventos</p>
     </div>
 
     <button class="btn-crear" data-bs-toggle="modal" data-bs-target="#crearEventoModal">
@@ -133,7 +136,6 @@
             </div>
         }
     </div>
-</div>
 
 <script>
 
