@@ -1,0 +1,75 @@
+@model PlanificacionGestionEventos.Models.Evento
+
+@{
+    // modern card layout: textual info first, then image with gallery button
+}
+
+<div class="card-evento" data-state="@Model.Estado.ToString()" data-eventid="@Model.EventoId" data-images="@(Model.Images ?? "")">
+
+    <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+            <h4 class="mb-1">@Model.Nombre</h4>
+            <div class="text-muted small">@Model.Fecha.ToShortDateString() · @Model.Hora</div>
+        </div>
+        <div>
+            <span class="badge bg-secondary">@Model.Estado.ToString()</span>
+        </div>
+    </div>
+
+    <p class="mb-1"><strong>Lugar:</strong> <span class="ev-lugar">@Model.Lugar</span></p>
+    <p class="mb-1"><strong>Máx Invitados:</strong> <span class="ev-maximo">@Model.MaximoInvitados</span></p>
+    <p class="descripcion">@Model.Descripcion</p>
+
+    <div class="mt-3">
+        <div class="d-flex gap-3 align-items-start">
+            @* Preview image area *@
+            <div style="flex:0 0 160px; height:120px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f8f9fa; border-radius:6px;">
+                @if (!string.IsNullOrWhiteSpace(Model.Images))
+                {
+                    var first = Model.Images.Split(';').FirstOrDefault();
+                    if (!string.IsNullOrWhiteSpace(first))
+                    {
+                        <img src="/uploads/@first" class="img-fluid rounded" alt="@Model.Nombre" style="width:160px; height:120px; object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="text-muted small text-center">Imágenes no proporcionadas</div>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted small text-center">Imágenes no proporcionadas</div>
+                }
+            </div>
+
+            @* Gallery button area (same size as preview) *@
+            @if (!string.IsNullOrWhiteSpace(Model.Images))
+            {
+                <div style="flex:0 0 160px; height:120px; display:flex; align-items:center; justify-content:center;">
+                    <button type="button" class="btn btn-outline-primary view-gallery-btn w-100 h-100" data-eventid="@Model.EventoId" style="height:120px;">Mostrar todas las imágenes</button>
+                </div>
+            }
+            else
+            {
+                <div style="flex:0 0 160px; height:120px;"></div>
+            }
+        </div>
+
+        <div class="mt-2 d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#invitadosModal" data-eventid="@Model.EventoId">Invitados</button>
+            @{
+                var userIdClaim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                int.TryParse(userIdClaim, out var currentUserId);
+                if (User.IsInRole("Admin") || (User.IsInRole("Organizador") && Model.OrganizadorId == currentUserId))
+                {
+                    <button type="button" class="btn btn-success btn-sm edit-event-btn" data-eventid="@Model.EventoId">Editar</button>
+                    <form asp-action="Delete" asp-route-id="@Model.EventoId" method="post" class="d-inline" onsubmit="return confirm('¿Confirmas que deseas eliminar este evento?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                }
+            }
+        </div>
+    </div>
+
+</div>

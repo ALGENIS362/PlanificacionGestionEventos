@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using PlanificacionGestionEventos.Data;
 using PlanificacionGestionEventos.Models;
 
 namespace PlanificacionGestionEventos.Controllers
 {
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
     public class UsuariosController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -17,7 +19,20 @@ namespace PlanificacionGestionEventos.Controllers
         // GET: Usuarios
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Usuarios.ToListAsync());
+            var usuarios = await _context.Usuarios.ToListAsync();
+            var list = new List<Models.UsuarioListViewModel>();
+            foreach (var u in usuarios)
+            {
+                var role = await _context.UsuariosRoles
+                    .Include(ur => ur.Role)
+                    .Where(ur => ur.UsuarioId == u.UsuarioId)
+                    .Select(ur => ur.Role.Nombre)
+                    .FirstOrDefaultAsync();
+
+                list.Add(new Models.UsuarioListViewModel { Usuario = u, RoleName = role ?? string.Empty });
+            }
+
+            return View(list);
         }
 
         // GET: Usuarios/Details/5
@@ -39,9 +54,10 @@ namespace PlanificacionGestionEventos.Controllers
         }
 
         // GET: Usuarios/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            ViewData["Roles"] = await _context.Roles.Select(r => r.Nombre).ToListAsync();
+            return View(new Models.UsuarioCreateViewModel());
         }
 
         // POST: Usuarios/Create
@@ -49,15 +65,43 @@ namespace PlanificacionGestionEventos.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UsuarioId,NombreCompleto,Email,Telefono,PasswordHash")] Usuario usuario)
+        public async Task<IActionResult> Create(Models.UsuarioCreateViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(usuario);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ViewData["Roles"] = await _context.Roles.Select(r => r.Nombre).ToListAsync();
+                return View(model);
             }
-            return View(usuario);
+
+            // Crear entidad Usuario
+            var usuario = new Usuario
+            {
+                NombreCompleto = model.NombreCompleto,
+                Email = model.Email,
+                Telefono = model.Telefono
+            };
+
+            // Hashear contraseña
+            var hasher = new PasswordHasher<Usuario>();
+            usuario.PasswordHash = hasher.HashPassword(usuario, model.Password);
+
+            _context.Usuarios.Add(usuario);
+            await _context.SaveChangesAsync();
+
+            // Asignar rol seleccionado o por defecto Invitado
+            var roleName = string.IsNullOrWhiteSpace(model.SelectedRole) ? "Invitado" : model.SelectedRole;
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Nombre == roleName);
+            if (role == null)
+            {
+                role = new Role { Nombre = roleName };
+                _context.Roles.Add(role);
+                await _context.SaveChangesAsync();
+            }
+
+            _context.UsuariosRoles.Add(new UsuarioRole { UsuarioId = usuario.UsuarioId, RoleId = role.RoleId });
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Usuarios/Edit/5
@@ -73,42 +117,103 @@ namespace PlanificacionGestionEventos.Controllers
             {
                 return NotFound();
             }
-            return View(usuario);
+
+            var vm = new Models.UsuarioEditViewModel
+            {
+                UsuarioId = usuario.UsuarioId,
+                NombreCompleto = usuario.NombreCompleto,
+                Email = usuario.Email,
+                Telefono = usuario.Telefono
+            };
+
+            // obtener rol actual si existe
+            var roleName = await _context.UsuariosRoles
+                .Include(ur => ur.Role)
+                .Where(ur => ur.UsuarioId == usuario.UsuarioId)
+                .Select(ur => ur.Role.Nombre)
+                .FirstOrDefaultAsync();
+
+            vm.SelectedRole = roleName;
+
+            // lista de roles para dropdown: asegurar que Invitado y Organizador (y Admin) estén disponibles
+            var dbRoles = await _context.Roles.Select(r => r.Nombre).ToListAsync();
+            var roles = new List<string> { "Invitado", "Organizador", "Admin" };
+            foreach (var r in dbRoles)
+            {
+                if (!roles.Contains(r)) roles.Add(r);
+            }
+            ViewData["Roles"] = roles;
+
+            return View(vm);
         }
 
         // POST: Usuarios/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UsuarioId,NombreCompleto,Email,Telefono,PasswordHash")] Usuario usuario)
+        public async Task<IActionResult> Edit(int id, Models.UsuarioEditViewModel model)
         {
-            if (id != usuario.UsuarioId)
+            if (id != model.UsuarioId)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var usuario = await _context.Usuarios.FindAsync(id);
+            if (usuario == null)
+                return NotFound();
+
+            usuario.NombreCompleto = model.NombreCompleto;
+            usuario.Email = model.Email;
+            usuario.Telefono = model.Telefono;
+
+            // Si se proporciona una nueva contraseña, hashearla y actualizar
+            if (!string.IsNullOrWhiteSpace(model.Password))
             {
-                try
+                var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<Usuario>();
+                usuario.PasswordHash = hasher.HashPassword(usuario, model.Password);
+            }
+
+            try
+            {
+                _context.Update(usuario);
+                await _context.SaveChangesAsync();
+
+                // actualizar rol si se indicó
+                if (!string.IsNullOrWhiteSpace(model.SelectedRole))
                 {
-                    _context.Update(usuario);
+                    var role = await _context.Roles.FirstOrDefaultAsync(r => r.Nombre == model.SelectedRole);
+                    if (role == null)
+                    {
+                        role = new Role { Nombre = model.SelectedRole };
+                        _context.Roles.Add(role);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    // eliminar roles previos
+                    var existing = _context.UsuariosRoles.Where(ur => ur.UsuarioId == usuario.UsuarioId);
+                    _context.UsuariosRoles.RemoveRange(existing);
+                    await _context.SaveChangesAsync();
+
+                    // asignar nuevo rol
+                    _context.UsuariosRoles.Add(new UsuarioRole { UsuarioId = usuario.UsuarioId, RoleId = role.RoleId });
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UsuarioExists(usuario.UsuarioId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
             }
-            return View(usuario);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UsuarioExists(usuario.UsuarioId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Usuarios/Delete/5

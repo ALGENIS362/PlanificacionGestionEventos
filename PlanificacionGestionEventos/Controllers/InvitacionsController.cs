@@ -103,5 +103,28 @@ namespace PlanificacionGestionEventos.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        // Buscar usuarios con rol Invitado por email (JSON)
+        [HttpGet]
+        public async Task<IActionResult> SearchInvitados(string email, int eventoId)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return Json(new object[0]);
+
+            var query = from u in _context.Usuarios
+                        join ur in _context.UsuariosRoles on u.UsuarioId equals ur.UsuarioId
+                        join r in _context.Roles on ur.RoleId equals r.RoleId
+                        where r.Nombre == "Invitado" && u.Email.Contains(email)
+                        select new
+                        {
+                            u.UsuarioId,
+                            u.NombreCompleto,
+                            u.Email,
+                            u.Telefono
+                        };
+
+            var users = await query.Distinct().ToListAsync();
+            return Json(users);
+        }
     }
 }

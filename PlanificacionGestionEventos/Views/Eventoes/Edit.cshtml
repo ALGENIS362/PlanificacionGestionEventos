@@ -1,68 +1,102 @@
 ﻿@model PlanificacionGestionEventos.Models.Evento
 
 @{
-    Layout = null;
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!DOCTYPE html>
+<div class="d-flex align-items-center justify-content-center min-vh-100">
+    <div class="card login-card shadow-sm" style="width:760px;">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-start mb-3">
+                <h4 class="mb-0">Editar Evento</h4>
+            </div>
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Edit</title>
-</head>
-<body>
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                <input type="hidden" asp-for="EventoId" />
 
-<h4>Evento</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="EventoId" />
-            <div class="form-group">
-                <label asp-for="Nombre" class="control-label"></label>
-                <input asp-for="Nombre" class="form-control" />
-                <span asp-validation-for="Nombre" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Fecha" class="control-label"></label>
-                <input asp-for="Fecha" class="form-control" />
-                <span asp-validation-for="Fecha" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Hora" class="control-label"></label>
-                <input asp-for="Hora" class="form-control" />
-                <span asp-validation-for="Hora" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Lugar" class="control-label"></label>
-                <input asp-for="Lugar" class="form-control" />
-                <span asp-validation-for="Lugar" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Descripcion" class="control-label"></label>
-                <input asp-for="Descripcion" class="form-control" />
-                <span asp-validation-for="Descripcion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="OrganizadorId" class="control-label"></label>
-                <select asp-for="OrganizadorId" class="form-control" asp-items="ViewBag.OrganizadorId"></select>
-                <span asp-validation-for="OrganizadorId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Nombre" class="form-label">Nombre</label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Fecha" class="form-label">Fecha</label>
+                        <input asp-for="Fecha" type="date" class="form-control" />
+                        <span asp-validation-for="Fecha" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Hora" class="form-label">Hora</label>
+                        <input asp-for="Hora" type="time" class="form-control" />
+                        <span asp-validation-for="Hora" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Lugar" class="form-label">Lugar</label>
+                    <input asp-for="Lugar" class="form-control" />
+                    <span asp-validation-for="Lugar" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Descripcion" class="form-label">Descripción</label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Categoría</label>
+                        <select asp-for="Categoria" class="form-select">
+                            <option value="">Seleccione</option>
+                            <option value="Socio" selected="@(Model.Categoria=="Socio"?"selected":null)">Socio</option>
+                            <option value="Negocios" selected="@(Model.Categoria=="Negocios"?"selected":null)">Negocios</option>
+                            <option value="Boda" selected="@(Model.Categoria=="Boda"?"selected":null)">Boda</option>
+                            <option value="Cumpleaños" selected="@(Model.Categoria=="Cumpleaños"?"selected":null)">Cumpleaños</option>
+                            <option value="Reunión" selected="@(Model.Categoria=="Reunión"?"selected":null)">Reunión</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Máx Invitados</label>
+                        <input asp-for="MaximoInvitados" type="number" class="form-control" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Estado</label>
+                        <select asp-for="Estado" class="form-select">
+                            @if (ViewData["Estados"] is IEnumerable<string> estados)
+                            {
+                                foreach (var e in estados)
+                                {
+                                    var enumVal = (int)Enum.Parse(typeof(PlanificacionGestionEventos.Models.EventoEstado), e);
+                                    if ((int)Model.Estado == enumVal)
+                                    {
+                                        <option value="@enumVal" selected="selected">@e</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@enumVal">@e</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
-</body>
-</html>

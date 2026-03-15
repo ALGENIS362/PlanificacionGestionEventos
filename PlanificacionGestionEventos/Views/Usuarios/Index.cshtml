@@ -1,4 +1,4 @@
-﻿@model IEnumerable<PlanificacionGestionEventos.Models.Usuario>
+﻿@model IEnumerable<PlanificacionGestionEventos.Models.UsuarioListViewModel>
 
 <div class="container">
 
@@ -15,7 +15,7 @@
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Teléfono</th>
-                <th>Password</th>
+                <th>Rol</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -27,26 +27,20 @@
                 foreach (var item in Model)
                 {
                     <tr>
+                        <td>@item.Usuario.NombreCompleto</td>
 
-                        <td>@item.NombreCompleto</td>
+                        <td>@item.Usuario.Email</td>
 
-                        <td>@item.Email</td>
+                        <td>@item.Usuario.Telefono</td>
 
-                        <td>@item.Telefono</td>
-
-                        <td>@item.PasswordHash</td>
+                        <td>@item.RoleName</td>
 
                         <td>
-
-                            <a asp-action="Edit" asp-route-id="@item.UsuarioId" class="btn btn-success btn-sm">
+                            <a asp-action="Edit" asp-route-id="@item.Usuario.UsuarioId" class="btn btn-success btn-sm">
                                 Editar
                             </a>
 
-                            <a asp-action="Details" asp-route-id="@item.UsuarioId" class="btn btn-info btn-sm">
-                                Detalles
-                            </a>
-
-                            <a asp-action="Delete" asp-route-id="@item.UsuarioId" class="btn btn-danger btn-sm">
+                            <a asp-action="Delete" asp-route-id="@item.Usuario.UsuarioId" class="btn btn-danger btn-sm">
                                 Eliminar
                             </a>
 

@@ -31,6 +31,12 @@ namespace PlanificacionGestionEventos.Models
 
         public Usuario? Organizador { get; set; }
 
+        [System.ComponentModel.DataAnnotations.Required]
+        public EventoEstado Estado { get; set; } = EventoEstado.Activo;
+
+        // Almacena rutas relativas de imágenes separadas por punto y coma ';'
+        public string? Images { get; set; }
+
         public ICollection<Invitacion> Invitaciones { get; set; } = new List<Invitacion>();
     }
 }

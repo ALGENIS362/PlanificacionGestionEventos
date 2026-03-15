@@ -84,31 +84,52 @@
                 </a>
             </li>
 
-            <li>
-                <a asp-controller="Eventoes" asp-action="Index">
-                    Mis Eventos
-                </a>
-            </li>
+            @if (User.IsInRole("Organizador") || User.IsInRole("Admin"))
+            {
+                <li>
+                    <a asp-controller="Eventoes" asp-action="Index">
+                        Mis Eventos
+                    </a>
+                </li>
 
-            <li>
-                <a asp-controller="Invitacions" asp-action="Index">
-                    Invitados
-                </a>
-            </li>
+                <li>
+                    <a asp-controller="Invitacions" asp-action="Index">
+                        Invitados
+                    </a>
+                </li>
+            }
 
-            <li>
-                <a asp-controller="Usuarios" asp-action="Index">
-                    Usuarios
-                </a>
-            </li>
+            @* Usuarios y estadísticas solo para Admin *@
+            @if (User.IsInRole("Admin"))
+            {
+                <li>
+                    <a asp-controller="Usuarios" asp-action="Index">
+                        Usuarios
+                    </a>
+                </li>
 
-            <li>
-                <a asp-controller="Dashboard" asp-action="Index">
-                    Estadísticas
-                </a>
-            </li>
+                <li>
+                    <a asp-controller="Dashboard" asp-action="Index">
+                        Estadísticas
+                    </a>
+                </li>
+            }
 
         </ul>
+
+        <div style="position:absolute;bottom:20px;left:20px;right:20px;">
+            @if (User?.Identity?.IsAuthenticated ?? false)
+            {
+                <div class="small text-white mb-2">@User.Identity.Name</div>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-sm btn-outline-light">Cerrar sesión</button>
+                </form>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-outline-light">Iniciar sesión</a>
+            }
+        </div>
 
     </div>
 

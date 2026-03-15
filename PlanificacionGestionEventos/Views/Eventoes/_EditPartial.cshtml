@@ -1,0 +1,112 @@
+@model PlanificacionGestionEventos.Models.Evento
+
+@* Partial edit form for modal *@
+<form asp-action="Edit" asp-route-id="@Model.EventoId" method="post" id="editEventoForm" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+    <input type="hidden" asp-for="EventoId" />
+    <input type="hidden" asp-for="OrganizadorId" />
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Nombre" class="form-label">Nombre</label>
+            <input asp-for="Nombre" class="form-control" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="Fecha" class="form-label">Fecha</label>
+            <input asp-for="Fecha" type="date" class="form-control" />
+            <span asp-validation-for="Fecha" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="Hora" class="form-label">Hora</label>
+            <input asp-for="Hora" type="time" class="form-control" />
+            <span asp-validation-for="Hora" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Lugar" class="form-label">Lugar</label>
+        <input asp-for="Lugar" class="form-control" />
+        <span asp-validation-for="Lugar" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Descripcion" class="form-label">Descripción</label>
+        <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Descripcion" class="text-danger"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Categoría</label>
+            <select asp-for="Categoria" class="form-select">
+                <option value="">Seleccione</option>
+                <option value="Socio" selected="@(Model.Categoria=="Socio"?"selected":null)">Socio</option>
+                <option value="Negocios" selected="@(Model.Categoria=="Negocios"?"selected":null)">Negocios</option>
+                <option value="Boda" selected="@(Model.Categoria=="Boda"?"selected":null)">Boda</option>
+                <option value="Cumpleaños" selected="@(Model.Categoria=="Cumpleaños"?"selected":null)">Cumpleaños</option>
+                <option value="Reunión" selected="@(Model.Categoria=="Reunión"?"selected":null)">Reunión</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Máx Invitados</label>
+            <input asp-for="MaximoInvitados" type="number" class="form-control" />
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Estado</label>
+            <select asp-for="Estado" class="form-select">
+                @if (ViewData["Estados"] is IEnumerable<string> estados)
+                {
+                    foreach (var e in estados)
+                    {
+                        var enumVal = (int)Enum.Parse(typeof(PlanificacionGestionEventos.Models.EventoEstado), e);
+                        if ((int)Model.Estado == enumVal)
+                        {
+                            <option value="@enumVal" selected="selected">@e</option>
+                        }
+                        else
+                        {
+                            <option value="@enumVal">@e</option>
+                        }
+                    }
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+    
+    <div class="mt-3">
+        <label class="form-label">Imágenes (puede subir varias)</label>
+        <input type="file" name="Images" multiple class="form-control" />
+        <div class="progress mt-2" style="height:6px; display:none;" id="editProgressContainer">
+            <div class="progress-bar" role="progressbar" style="width: 0%;" id="editProgressBar"></div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Images))
+    {
+        <div class="mt-3">
+            <label class="form-label">Imágenes actuales</label>
+            <div class="d-flex gap-2 flex-wrap" id="existingImages">
+                @foreach (var img in Model.Images.Split(';').Where(s => !string.IsNullOrWhiteSpace(s)))
+                {
+                    <div class="card" style="width:120px;">
+                        <img src="/uploads/@img" class="card-img-top" style="height:80px; object-fit:cover;" />
+                        <div class="card-body p-2 text-center">
+                            <button type="button" class="btn btn-sm btn-danger btn-block delete-image-btn" data-filename="@img">Eliminar</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</form>
