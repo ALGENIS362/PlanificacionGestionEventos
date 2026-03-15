@@ -94,7 +94,6 @@
         <p class="text-slate-400">Gestiona todos tus eventos</p>
     </div>
 
-    <!-- Toast area -->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
         <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
@@ -108,7 +107,6 @@
         </div>
     </div>
     
-    <!-- Modal Edit Evento -->
     <div class="modal fade" id="editEventoModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -152,7 +150,6 @@
         }
     </div>
 
-    <!-- Modal Invitados -->
     <div class="modal fade" id="invitadosModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -189,7 +186,6 @@
             }
         });
 
-    // Delete image from edit modal
     document.addEventListener('click', function(e){
         var btn = e.target.closest('.delete-image-btn');
         if (!btn) return;
@@ -218,7 +214,6 @@
     });
     }
 
-    // Edit modal logic: load partial via AJAX when edit button clicked
     document.addEventListener('click', function(e){
         var btn = e.target.closest('.edit-event-btn');
         if (!btn) return;
@@ -236,7 +231,6 @@
         bm.show();
     });
 
-    // Intercept submit of edit form inside modal to POST via AJAX (supports progress when uploading files)
     document.addEventListener('submit', function(e){
         var form = e.target;
         if (!form || form.id !== 'editEventoForm') return;
@@ -294,7 +288,6 @@
         }
     });
 
-    // Create modal submit via AJAX (supports progress)
     document.addEventListener('submit', function(e){
         var form = e.target;
         if (!form || form.id !== 'createEventoForm') return;
@@ -344,7 +337,6 @@
         }
     });
 
-    // Invitados modal logic
     var invitadosModal = document.getElementById('invitadosModal');
     var currentEventoId = null;
     invitadosModal.addEventListener('show.bs.modal', function (event) {
@@ -386,7 +378,6 @@
         }, 400);
     });
 
-    // Gallery modal logic: show all images for an event
     document.addEventListener('click', function(e){
         var btn = e.target.closest('.view-gallery-btn');
         if (!btn) return;
@@ -423,7 +414,6 @@
 
 </script>
 
-<!-- Gallery modal -->
 <div class="modal fade" id="galleryModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
