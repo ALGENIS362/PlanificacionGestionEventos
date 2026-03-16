@@ -19,20 +19,19 @@ namespace PlanificacionGestionEventos.Controllers
         // GET: Usuarios
         public async Task<IActionResult> Index()
         {
-            var usuarios = await _context.Usuarios.ToListAsync();
-            var list = new List<Models.UsuarioListViewModel>();
-            foreach (var u in usuarios)
-            {
-                var role = await _context.UsuariosRoles
-                    .Include(ur => ur.Role)
-                    .Where(ur => ur.UsuarioId == u.UsuarioId)
-                    .Select(ur => ur.Role.Nombre)
-                    .FirstOrDefaultAsync();
-
-                list.Add(new Models.UsuarioListViewModel { Usuario = u, RoleName = role ?? string.Empty });
-            }
-
-            return View(list);
+            var usuarios = await (
+     from u in _context.Usuarios
+     join ur in _context.UsuariosRoles on u.UsuarioId equals ur.UsuarioId into userRoles
+     from ur in userRoles.DefaultIfEmpty()
+     join r in _context.Roles on ur.RoleId equals r.RoleId into roles
+     from r in roles.DefaultIfEmpty()
+     select new Models.UsuarioListViewModel
+     {
+         Usuario = u,
+         RoleName = r != null && r.Nombre != null ? r.Nombre : ""
+     }
+         ).ToListAsync();
+           return View(usuarios);
         }
 
         // GET: Usuarios/Details/5
@@ -83,7 +82,11 @@ namespace PlanificacionGestionEventos.Controllers
 
             // Hashear contraseña
             var hasher = new PasswordHasher<Usuario>();
-            usuario.PasswordHash = hasher.HashPassword(usuario, model.Password);
+
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                usuario.PasswordHash = hasher.HashPassword(usuario, model.Password);
+            }
 
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
@@ -130,7 +133,7 @@ namespace PlanificacionGestionEventos.Controllers
             var roleName = await _context.UsuariosRoles
                 .Include(ur => ur.Role)
                 .Where(ur => ur.UsuarioId == usuario.UsuarioId)
-                .Select(ur => ur.Role.Nombre)
+                .Select(ur => ur.Role!.Nombre ?? "")
                 .FirstOrDefaultAsync();
 
             vm.SelectedRole = roleName;
@@ -140,7 +143,8 @@ namespace PlanificacionGestionEventos.Controllers
             var roles = new List<string> { "Invitado", "Organizador", "Admin" };
             foreach (var r in dbRoles)
             {
-                if (!roles.Contains(r)) roles.Add(r);
+                if (r != null && !roles.Contains(r))
+                    roles.Add(r);
             }
             ViewData["Roles"] = roles;
 

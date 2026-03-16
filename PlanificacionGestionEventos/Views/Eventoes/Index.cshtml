@@ -84,10 +84,7 @@
         padding: 50px;
         color: #777;
     }
-
 </style>
-
-<div class="container-eventos">
 
     <div>
         <h2 class="text-3xl font-bold mb-2">Mis Eventos</h2>
@@ -138,7 +135,7 @@
         {
             foreach (var item in Model)
             {
-                @Html.Partial("_EventoCardPartial", item)
+                <partial name="_EventoCardPartial" model="item" />
             }
         }
         else
@@ -171,7 +168,6 @@
             </div>
         </div>
     </div>
-</div>
 
 <script>
 
@@ -212,7 +208,7 @@
             })
             .catch(function(){ alert('Error al eliminar imagen'); });
     });
-    }
+  }
 
     document.addEventListener('click', function(e){
         var btn = e.target.closest('.edit-event-btn');

@@ -2,7 +2,7 @@ namespace PlanificacionGestionEventos.Models
 {
     public class UsuarioListViewModel
     {
-        public Usuario Usuario { get; set; }
-        public string RoleName { get; set; }
+        public Usuario Usuario { get; set; } = new Usuario();
+        public string RoleName { get; set; } = "";
     }
 }

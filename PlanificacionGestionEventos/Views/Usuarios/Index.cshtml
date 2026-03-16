@@ -27,31 +27,27 @@
                 foreach (var item in Model)
                 {
                     <tr>
-                        <td>@item.Usuario.NombreCompleto</td>
 
-                        <td>@item.Usuario.Email</td>
+                        <td>@(item.Usuario?.NombreCompleto ?? "Sin nombre")</td>
 
-                        <td>@item.Usuario.Telefono</td>
+                        <td>@(item.Usuario?.Email ?? "Sin email")</td>
+
+                        <td>@(item.Usuario?.Telefono ?? "-")</td>
 
                         <td>@item.RoleName</td>
 
                         <td>
-                            <a asp-action="Edit" asp-route-id="@item.Usuario.UsuarioId" class="btn btn-success btn-sm">
+                            <a asp-action="Edit" asp-route-id="@item.Usuario?.UsuarioId" class="btn btn-success btn-sm">
                                 Editar
                             </a>
 
-                            <a asp-action="Delete" asp-route-id="@item.Usuario.UsuarioId" class="btn btn-danger btn-sm">
+                            <a asp-action="Delete" asp-route-id="@item.Usuario?.UsuarioId" class="btn btn-danger btn-sm">
                                 Eliminar
                             </a>
-
                         </td>
-
                     </tr>
                 }
             }
-
         </tbody>
-
     </table>
-
 </div>

@@ -114,7 +114,7 @@ namespace PlanificacionGestionEventos.Controllers
             var query = from u in _context.Usuarios
                         join ur in _context.UsuariosRoles on u.UsuarioId equals ur.UsuarioId
                         join r in _context.Roles on ur.RoleId equals r.RoleId
-                        where r.Nombre == "Invitado" && u.Email.Contains(email)
+                        where r.Nombre == "Invitado" && u.Email != null && u.Email.Contains(email)
                         select new
                         {
                             u.UsuarioId,

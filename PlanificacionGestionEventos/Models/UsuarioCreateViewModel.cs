@@ -22,12 +22,12 @@ namespace PlanificacionGestionEventos.Models
         [DataType(DataType.Password)]
         [MinLength(6, ErrorMessage = "La contraseña debe tener al menos {1} caracteres.")]
         [Display(Name = "Contraseña")]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirmar contraseña")]
         [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
-        public string ConfirmPassword { get; set; }
+        public string? ConfirmPassword { get; set; }
 
         [Display(Name = "Rol")]
         public string? SelectedRole { get; set; }

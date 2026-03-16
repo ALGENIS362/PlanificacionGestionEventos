@@ -21,7 +21,7 @@ namespace PlanificacionGestionEventos.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult Login(string returnUrl = null)
+        public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View(new LoginViewModel());
@@ -30,14 +30,14 @@ namespace PlanificacionGestionEventos.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             if (!ModelState.IsValid)
                 return View(model);
 
             var user = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Email == model.Email);
+                .FirstOrDefaultAsync(u => u.Email == (model.Email ?? ""));
 
             if (user == null)
             {
@@ -47,7 +47,8 @@ namespace PlanificacionGestionEventos.Controllers
 
             // Verificar contraseña usando PasswordHasher
             var hasher = new PasswordHasher<Usuario>();
-            var verifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash ?? string.Empty, model.Password);
+            var verifyResult = hasher.VerifyHashedPassword(user, user.PasswordHash ?? string.Empty,
+            model.Password ?? string.Empty);
             if (verifyResult == PasswordVerificationResult.Failed)
             {
                 ModelState.AddModelError(string.Empty, "Credenciales inválidas.");
@@ -58,19 +59,20 @@ namespace PlanificacionGestionEventos.Controllers
             var roleNames = await _context.UsuariosRoles
                 .Include(ur => ur.Role)
                 .Where(ur => ur.UsuarioId == user.UsuarioId)
-                .Select(ur => ur.Role.Nombre)
+                .Select(ur => ur.Role != null ? ur.Role.Nombre : "")
                 .ToListAsync();
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UsuarioId.ToString()),
-                new Claim(ClaimTypes.Name, user.NombreCompleto ?? user.Email),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Name, user.NombreCompleto ?? user.Email ?? ""),
+                new Claim(ClaimTypes.Email, user.Email ?? "")
             };
 
             foreach (var rn in roleNames)
             {
-                claims.Add(new Claim(ClaimTypes.Role, rn));
+                if (!string.IsNullOrEmpty(rn))
+                    claims.Add(new Claim(ClaimTypes.Role, rn));
             }
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -106,14 +108,16 @@ namespace PlanificacionGestionEventos.Controllers
                 return View(model);
             }
 
+            var hasher = new PasswordHasher<Usuario>();
+
             var usuario = new Usuario
             {
                 NombreCompleto = model.Name,
                 Email = model.Email,
-                Telefono = model.Telefono,
-                // Guardar password hasheada de forma segura
-                PasswordHash = new PasswordHasher<Usuario>().HashPassword(null, model.Password)
+                Telefono = model.Telefono
             };
+
+            usuario.PasswordHash = hasher.HashPassword(usuario, model.Password ?? "");
 
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
@@ -136,8 +140,8 @@ namespace PlanificacionGestionEventos.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.UsuarioId.ToString()),
-                new Claim(ClaimTypes.Name, usuario.NombreCompleto ?? usuario.Email),
-                new Claim(ClaimTypes.Email, usuario.Email),
+                new Claim(ClaimTypes.Name, usuario.NombreCompleto ?? usuario.Email ?? ""),
+                new Claim(ClaimTypes.Email, usuario.Email ?? ""),
                 new Claim(ClaimTypes.Role, roleName)
             };
 

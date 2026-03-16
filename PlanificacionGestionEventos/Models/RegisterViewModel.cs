@@ -7,12 +7,12 @@ namespace PlanificacionGestionEventos.Models
         [Required]
         [Display(Name = "Nombre")]
         [MaxLength(150)]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         [Required]
         [EmailAddress]
         [Display(Name = "Correo")]
-        public string Email { get; set; }
+        public string Email { get; set; } = "";
 
         [Display(Name = "Teléfono")]
         [MaxLength(50)]
@@ -22,16 +22,16 @@ namespace PlanificacionGestionEventos.Models
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña")]
         [MinLength(6, ErrorMessage = "La contraseña debe tener al menos {1} caracteres.")]
-        public string Password { get; set; }
+        public string Password { get; set; } = "";
 
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Confirmar contraseña")]
         [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
-        public string ConfirmPassword { get; set; }
+        public string? ConfirmPassword { get; set; }
 
         [Required]
         [Display(Name = "Registrarse como")]
-        public string Role { get; set; }
+        public string Role { get; set; } = "";
     }
 }
