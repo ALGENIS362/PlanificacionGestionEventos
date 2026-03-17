@@ -1,6 +1,10 @@
 ﻿@model IEnumerable<PlanificacionGestionEventos.Models.Evento>
 
 <style>
+    body {
+        background: #0f172a;
+    }
+
     .container-eventos {
         background: white;
         padding: 25px;
@@ -56,7 +60,7 @@
 
         .card-evento h3 {
             margin-bottom: 10px;
-            color: #0f172a;
+            color: white;
         }
 
     .info {
@@ -87,8 +91,8 @@
 </style>
 
     <div>
-        <h2 class="text-3xl font-bold mb-2">Mis Eventos</h2>
-        <p class="text-slate-400">Gestiona todos tus eventos</p>
+    <h2 class="text-3xl text-white">Mis Eventos</h2>
+        <p class="text-secondary">Gestiona todos tus eventos</p>
     </div>
 
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
@@ -129,6 +133,7 @@
         <button class="filter-btn" onclick="filterEvents('Cancelado')">Cancelados</button>
     </div>
 
+    <div class="contenedor-scroll">
     <div id="events-grid" class="grid-eventos">
 
         @if (Model != null && Model.Any())
@@ -146,6 +151,41 @@
             </div>
         }
     </div>
+</div>
+
+    <div class="pag_episodes">
+
+    @* Botón Anterior *@
+    @if (ViewBag.CurrentPage > 1)
+    {
+        <a class="page-btn" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })">
+            ⬅
+        </a>
+    }
+
+    @* Números de páginas *@
+    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+    {
+        if (i == ViewBag.CurrentPage)
+        {
+            <span class="page-number active">@i</span>
+        }
+        else
+        {
+            <a class="page-number" href="@Url.Action("Index", new { page = i })">
+                @i
+            </a>
+        }
+    }
+
+    @* Botón Siguiente *@
+    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+    {
+        <a class="page-btn" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })">
+            ➡
+        </a>
+    }
+</div>
 
     <div class="modal fade" id="invitadosModal" tabindex="-1">
         <div class="modal-dialog modal-lg">

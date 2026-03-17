@@ -52,7 +52,7 @@
             @Html.DisplayNameFor(model => model.Organizador)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Organizador.Email)
+                @(Model.Organizador?.Email ?? "")
         </dd>
     </dl>
     

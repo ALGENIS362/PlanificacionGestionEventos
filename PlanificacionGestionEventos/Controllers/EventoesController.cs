@@ -68,13 +68,14 @@ namespace PlanificacionGestionEventos.Controllers
             return Json(new { success = true });
         }
 
-        // GET: Eventoes
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            // provide estados for create modal
+            int pageSize = 6;
+
+            // 👇 Estados para el modal
             ViewData["Estados"] = Enum.GetNames(typeof(Models.EventoEstado)).ToList();
 
-            // if Admin show organizadores list for modal, if Organizador set current id
+            // 👇 Roles
             if (User.IsInRole("Admin"))
             {
                 ViewData["Organizadores"] = new SelectList(_context.Usuarios, "UsuarioId", "Email");
@@ -88,8 +89,25 @@ namespace PlanificacionGestionEventos.Controllers
                 }
             }
 
-            var applicationDbContext = _context.Eventos.Include(e => e.Organizador);
-            return View(await applicationDbContext.ToListAsync());
+            // 👇 Query base (IMPORTANTE: sin ToList aún)
+            var query = _context.Eventos
+                .Include(e => e.Organizador)
+                .OrderByDescending(e => e.Fecha);
+
+            // 👇 Total
+            var totalEventos = await query.CountAsync();
+
+            // 👇 Paginación real en BD (MEJOR rendimiento)
+            var eventos = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // 👇 ViewBag
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalEventos / pageSize);
+
+            return View(eventos);
         }
 
         // GET: Eventoes/Details/5
