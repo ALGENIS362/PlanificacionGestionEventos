@@ -44,31 +44,4 @@
             </div>
         </div>
     </div>
-
 </div>
-
-@* Mostrar lista de eventos según rol/propiedad *@
-@if (Model?.Eventos != null && Model.Eventos.Any())
-{
-    <h3 class="mt-4">Eventos</h3>
-    <div class="row">
-        @foreach (var ev in Model.Eventos)
-        {
-            <div class="col-md-6 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">@ev.Nombre</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Organizador: @ev.Organizador?.NombreCompleto</h6>
-                        <p class="card-text">Fecha: @ev.Fecha.ToString("g")</p>
-                        <p class="card-text">Lugar: @ev.Lugar</p>
-                        <a asp-controller="Eventoes" asp-action="Details" asp-route-id="@ev.EventoId" class="btn btn-primary">Ver detalle</a>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-}
-else
-{
-    <p class="mt-4">No hay eventos para mostrar.</p>
-}

@@ -1,11 +1,5 @@
-﻿.sidebar {
-    display: flex;
-    flex-direction: column;
-}
+﻿/* SIDEBAR */
 
-.sidebar-footer {
-    margin-top: auto;
-}
 
 /* CONTENEDOR CON SCROLL */
 .contenedor-scroll {
@@ -24,15 +18,12 @@
         border-radius: 10px;
     }
 
-/* PAGINACIÓN FIJA ABAJO */
+/* PAGINACIÓN */
 .pag_episodes {
     position: sticky;
     bottom: 0;
-    background: white;
+    background: #0f172a; /* fondo oscuro */
     padding: 10px;
-}
-
-.pag_episodes {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -41,25 +32,26 @@
     flex-wrap: wrap;
 }
 
+/* BOTONES DE PAGINACIÓN (MODO OSCURO) */
 .page-number, .page-btn {
     padding: 8px 12px;
     border-radius: 6px;
-    background: #e2e8f0;
-    color: #0f172a;
+    background: #334155; /* oscuro */
+    color: white;
     text-decoration: none;
     font-weight: 500;
     transition: 0.3s;
 }
 
+    /* HOVER */
     .page-number:hover, .page-btn:hover {
         background: #2563eb;
         color: white;
     }
 
+    /* ACTIVO */
     .page-number.active {
         background: #2563eb;
         color: white;
         font-weight: bold;
     }
-    body {
-}
