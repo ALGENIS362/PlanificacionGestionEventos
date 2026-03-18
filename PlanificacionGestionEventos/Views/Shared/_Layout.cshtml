@@ -82,7 +82,18 @@
                 </a>
             </li>
 
-            @if (User.IsInRole("Organizador") || User.IsInRole("Admin"))
+            <!-- 👤 PARTICIPANTE -->
+            @if (User.IsInRole("Participante"))
+            {
+                <li>
+                    <a asp-controller="Invitacions" asp-action="Index">
+                        Mis Invitaciones
+                    </a>
+                </li>
+            }
+
+            <!-- 🧑‍💼 ORGANIZADOR -->
+            @if (User.IsInRole("Organizador"))
             {
                 <li>
                     <a asp-controller="Eventoes" asp-action="Index">
@@ -92,26 +103,21 @@
 
                 <li>
                     <a asp-controller="Invitacions" asp-action="Index">
-                        Invitados
+                         Invitados
                     </a>
                 </li>
-            }
+        <li>
+            <a asp-controller="Usuarios" asp-action="Index">
+                Usuarios
+            </a>
+        </li>
 
-            @* Usuarios y estadísticas solo para Admin *@
-            @if (User.IsInRole("Admin"))
-            {
-                <li>
-                    <a asp-controller="Usuarios" asp-action="Index">
-                        Usuarios
-                    </a>
-                </li>
-
-                <li>
-                    <a asp-controller="Dashboard" asp-action="Index">
-                        Estadísticas
-                    </a>
-                </li>
-            }
+        <li>
+            <a asp-controller="Dashboard" asp-action="Index">
+                Estadísticas
+            </a>
+        </li>
+        }
         </ul>
 
            <div class="sidebar-footer">

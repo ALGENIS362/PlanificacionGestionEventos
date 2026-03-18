@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PlanificacionGestionEventos.Data;
 using PlanificacionGestionEventos.Models;
+using System.Security.Claims;
 
 namespace PlanificacionGestionEventos.Controllers
 {
@@ -17,10 +18,29 @@ namespace PlanificacionGestionEventos.Controllers
         // LISTAR INVITACIONES
         public async Task<IActionResult> Index()
         {
-            var invitaciones = await _context.Invitaciones
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            IQueryable<Invitacion> query = _context.Invitaciones
                 .Include(i => i.Evento)
-                .Include(i => i.Usuario)
-                .ToListAsync();
+                .Include(i => i.Usuario);
+
+            if (User.IsInRole("Participante"))
+            {
+                // 👤 SOLO VE SUS INVITACIONES
+                query = query.Where(i => i.UsuarioId == userId);
+            }
+            else if (User.IsInRole("Organizador"))
+            {
+                // 🧑‍💼 SOLO INVITACIONES DE SUS EVENTOS
+                query = query.Where(i => i.Evento != null && i.Evento.OrganizadorId == userId);
+            }
+
+            var invitaciones = await query.ToListAsync();
 
             return View(invitaciones);
         }
@@ -37,6 +57,29 @@ namespace PlanificacionGestionEventos.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Invitacion invitacion)
         {
+            // 🔒 SOLO ORGANIZADOR
+            if (!User.IsInRole("Organizador"))
+                return Unauthorized();
+
+            // 👤 OBTENER USUARIO LOGUEADO (SEGURO)
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            // 🔎 BUSCAR EVENTO
+            var evento = await _context.Eventos.FindAsync(invitacion.EventoId);
+
+            if (evento == null)
+                return NotFound();
+
+            // 🔒 VALIDAR QUE EL EVENTO ES DEL ORGANIZADOR
+            if (evento.OrganizadorId != userId)
+                return Unauthorized();
+
+            // ✅ GUARDAR
             if (ModelState.IsValid)
             {
                 _context.Invitaciones.Add(invitacion);
@@ -66,15 +109,31 @@ namespace PlanificacionGestionEventos.Controllers
             if (id != invitacion.InvitacionId)
                 return NotFound();
 
-            if (ModelState.IsValid)
-            {
-                _context.Update(invitacion);
-                await _context.SaveChangesAsync();
+            var invitacionDb = await _context.Invitaciones.FindAsync(id);
 
-                return RedirectToAction(nameof(Index));
+            if (invitacionDb == null)
+                return NotFound();
+
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            int.TryParse(userIdClaim, out var userId);
+
+            // 👤 SOLO EL PARTICIPANTE PUEDE RESPONDER
+            if (User.IsInRole("Participante"))
+            {
+                if (invitacionDb.UsuarioId != userId)
+                    return Unauthorized();
+
+                // 👇 SOLO CAMBIA ESTADO (RSVP)
+                invitacionDb.Estado = invitacion.Estado;
+            }
+            else
+            {
+                return Unauthorized();
             }
 
-            return View(invitacion);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // ELIMINAR
@@ -87,19 +146,53 @@ namespace PlanificacionGestionEventos.Controllers
             if (invitacion == null)
                 return NotFound();
 
+            if (invitacion.Evento == null)
+                return BadRequest("Evento inválido");
+
+            // 👤 OBTENER USUARIO
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            // 🔐 VALIDAR QUE ES EL ORGANIZADOR DEL EVENTO
+            if (!(User.IsInRole("Organizador") && invitacion.Evento.OrganizadorId == userId))
+            {
+                return Unauthorized();
+            }
+
             return View(invitacion);
         }
 
         [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var invitacion = await _context.Invitaciones.FindAsync(id);
+            var invitacion = await _context.Invitaciones
+                .Include(i => i.Evento)
+                .FirstOrDefaultAsync(i => i.InvitacionId == id);
 
-            if (invitacion != null)
-            {
-                _context.Invitaciones.Remove(invitacion);
-                await _context.SaveChangesAsync();
-            }
+            if (invitacion == null)
+                return NotFound();
+
+            if (invitacion.Evento == null)
+                return BadRequest();
+
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            // 🔐 SOLO ORGANIZADOR DUEÑO DEL EVENTO
+            if (!(User.IsInRole("Organizador") && invitacion.Evento.OrganizadorId == userId))
+                return Unauthorized();
+
+            _context.Invitaciones.Remove(invitacion);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
@@ -114,7 +207,7 @@ namespace PlanificacionGestionEventos.Controllers
             var query = from u in _context.Usuarios
                         join ur in _context.UsuariosRoles on u.UsuarioId equals ur.UsuarioId
                         join r in _context.Roles on ur.RoleId equals r.RoleId
-                        where r.Nombre == "Invitado" && u.Email != null && u.Email.Contains(email)
+                        where r.Nombre == "Participante" && u.Email != null && u.Email.Contains(email)
                         select new
                         {
                             u.UsuarioId,

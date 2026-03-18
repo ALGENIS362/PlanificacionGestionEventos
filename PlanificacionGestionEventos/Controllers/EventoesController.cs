@@ -72,38 +72,35 @@ namespace PlanificacionGestionEventos.Controllers
         {
             int pageSize = 6;
 
-            // 👇 Estados para el modal
             ViewData["Estados"] = Enum.GetNames(typeof(Models.EventoEstado)).ToList();
 
-            // 👇 Roles
-            if (User.IsInRole("Admin"))
+            IQueryable<Evento> query = _context.Eventos
+                .Include(e => e.Organizador);
+
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            int.TryParse(userIdClaim, out var userId);
+
+            if (User.IsInRole("Organizador"))
             {
-                ViewData["Organizadores"] = new SelectList(_context.Usuarios, "UsuarioId", "Email");
+                query = query.Where(e => e.OrganizadorId == userId);
             }
-            else if (User.IsInRole("Organizador"))
+            else if (User.IsInRole("Participante"))
             {
-                var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-                if (int.TryParse(userIdClaim, out var userId))
-                {
-                    ViewBag.CurrentOrganizadorId = userId;
-                }
+                query = _context.Invitaciones
+                    .Where(i => i.UsuarioId == userId && i.Evento != null)
+                    .Select(i => i.Evento!)
+                    .Include(e => e.Organizador);
             }
 
-            // 👇 Query base (IMPORTANTE: sin ToList aún)
-            var query = _context.Eventos
-                .Include(e => e.Organizador)
-                .OrderByDescending(e => e.Fecha);
+            query = query.OrderByDescending(e => e.Fecha);
 
-            // 👇 Total
             var totalEventos = await query.CountAsync();
 
-            // 👇 Paginación real en BD (MEJOR rendimiento)
             var eventos = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            // 👇 ViewBag
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalEventos / pageSize);
 
@@ -274,10 +271,26 @@ namespace PlanificacionGestionEventos.Controllers
             {
                 return NotFound();
             }
+
+            // 🔐 VALIDACIÓN DE SEGURIDAD (VA AQUÍ)
+            var eventoDb = await _context.Eventos.FindAsync(id);
+
+            if (eventoDb == null)
+                return NotFound();
+
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            int.TryParse(userIdClaim, out var userId);
+
+            if (!(User.IsInRole("Admin") || eventoDb.OrganizadorId == userId))
+            {
+                return Unauthorized();
+            }
+
             var isAjax = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", System.StringComparison.OrdinalIgnoreCase);
 
             if (ModelState.IsValid)
             {
+                // (tu código sigue igual aquí)
                 // handle uploaded files first (if any)
                 var files = Request.Form.Files;
                 if (files != null && files.Count > 0)
@@ -390,15 +403,25 @@ namespace PlanificacionGestionEventos.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var evento = await _context.Eventos.FindAsync(id);
-            if (evento != null)
+
+            if (evento == null)
+                return NotFound();
+
+            // 🔐 VALIDACIÓN DE SEGURIDAD (VA AQUÍ)
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            int.TryParse(userIdClaim, out var userId);
+
+            if (!(User.IsInRole("Admin") || evento.OrganizadorId == userId))
             {
-                _context.Eventos.Remove(evento);
+                return Unauthorized();
             }
 
+            // 👇 SI PASA LA VALIDACIÓN, BORRA
+            _context.Eventos.Remove(evento);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
-
         private bool EventoExists(int id)
         {
             return _context.Eventos.Any(e => e.EventoId == id);
