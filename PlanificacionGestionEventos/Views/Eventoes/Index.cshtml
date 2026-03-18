@@ -210,7 +210,6 @@
     </div>
 
 <script>
-
     function filterEvents(category){
         let eventos = document.querySelectorAll(".card-evento");
         eventos.forEach(function(evento){
@@ -221,6 +220,7 @@
                 evento.style.display = "none";
             }
         });
+    }
 
     document.addEventListener('click', function(e){
         var btn = e.target.closest('.delete-image-btn');
@@ -240,7 +240,7 @@
             .then(j => {
                 if (j && j.success) {
                     // remove card
-                    var card = btn.closest('.card');
+                   var card = btn.closest('.card-evento');
                     if (card) card.remove();
                 } else {
                     alert(j.message || 'Error al eliminar imagen');
@@ -248,7 +248,6 @@
             })
             .catch(function(){ alert('Error al eliminar imagen'); });
     });
-  }
 
     document.addEventListener('click', function(e){
         var btn = e.target.closest('.edit-event-btn');
@@ -276,32 +275,15 @@
         var hasFiles = false;
         form.querySelectorAll('input[type="file"]').forEach(function(fi){ if (fi.files && fi.files.length>0) hasFiles = true; });
 
-        function handleResponse(res){
-            if (typeof res === 'object' && res.success){
-                var id = res.evento.id;
-                var card = document.querySelector('.card-evento[data-eventid="' + id + '"]');
-                if (card){
-                    card.setAttribute('data-state', res.evento.estado);
-                    var badge = card.querySelector('.badge'); if(badge) badge.textContent = res.evento.estado;
-                    var title = card.querySelector('h3'); if(title) title.textContent = res.evento.nombre;
-                    var fechaEl = card.querySelector('.ev-fecha'); if(fechaEl) fechaEl.textContent = res.evento.fecha;
-                    var horaEl = card.querySelector('.ev-hora'); if(horaEl) horaEl.textContent = res.evento.hora;
-                    var lugarEl = card.querySelector('.ev-lugar'); if(lugarEl) lugarEl.textContent = res.evento.lugar || '';
-                    var maxEl = card.querySelector('.ev-maximo'); if(maxEl) maxEl.textContent = res.evento.maximo || '';
-                    var desc = card.querySelector('.descripcion'); if(desc) desc.textContent = res.evento.descripcion || '';
-                    var cat = card.querySelector('.categoria'); if(cat) cat.textContent = res.evento.categoria || '';
-                }
-                var editModalEl = document.getElementById('editEventoModal');
-                var modalInstance = bootstrap.Modal.getInstance(editModalEl);
-                if (modalInstance) modalInstance.hide();
-                var toastEl = document.getElementById('liveToast');
-                document.getElementById('toastBody').textContent = 'Evento actualizado correctamente';
-                var toast = new bootstrap.Toast(toastEl); toast.show();
-            } else {
-                var modalBody = document.getElementById('editModalBody');
-                modalBody.innerHTML = res;
-            }
+           function handleResponse(res){
+        if (typeof res === 'object' && res.success){
+            location.reload(); // 🔥 AQUÍ VA
+            return;
+        } else {
+            var modalBody = document.getElementById('editModalBody');
+            modalBody.innerHTML = res;
         }
+    }
 
         if (hasFiles){
             var xhr = new XMLHttpRequest();

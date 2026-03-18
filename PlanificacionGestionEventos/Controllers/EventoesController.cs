@@ -265,117 +265,79 @@ namespace PlanificacionGestionEventos.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EventoId,Nombre,Fecha,Hora,Lugar,Descripcion,Categoria,MaximoInvitados,OrganizadorId,Estado")] Evento evento)
+        public async Task<IActionResult> Edit(int id, Evento evento)
         {
             if (id != evento.EventoId)
-            {
                 return NotFound();
-            }
 
-            // 🔐 VALIDACIÓN DE SEGURIDAD (VA AQUÍ)
+            // 🔎 Buscar el evento en BD (SOLO ESTE SE USA)
             var eventoDb = await _context.Eventos.FindAsync(id);
 
             if (eventoDb == null)
                 return NotFound();
 
+            // 🔐 VALIDAR USUARIO (SOLO ORGANIZADOR)
             var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-            int.TryParse(userIdClaim, out var userId);
 
-            if (!(User.IsInRole("Admin") || eventoDb.OrganizadorId == userId))
-            {
+            if (string.IsNullOrEmpty(userIdClaim))
                 return Unauthorized();
-            }
 
-            var isAjax = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", System.StringComparison.OrdinalIgnoreCase);
+            int userId = int.Parse(userIdClaim);
 
-            if (ModelState.IsValid)
+            if (!(User.IsInRole("Organizador") && eventoDb.OrganizadorId == userId))
+                return Unauthorized();
+
+            // ✏ ACTUALIZAR CAMPOS (NO usar _context.Update)
+            eventoDb.Nombre = evento.Nombre;
+            eventoDb.Fecha = evento.Fecha;
+            eventoDb.Hora = evento.Hora;
+            eventoDb.Lugar = evento.Lugar;
+            eventoDb.Descripcion = evento.Descripcion;
+            eventoDb.Categoria = evento.Categoria;
+            eventoDb.MaximoInvitados = evento.MaximoInvitados;
+            eventoDb.Estado = evento.Estado;
+
+            // 📸 MANEJO DE IMÁGENES
+            var files = Request.Form.Files;
+
+            if (files != null && files.Count > 0)
             {
-                // (tu código sigue igual aquí)
-                // handle uploaded files first (if any)
-                var files = Request.Form.Files;
-                if (files != null && files.Count > 0)
+                var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+
+                if (!Directory.Exists(uploads))
+                    Directory.CreateDirectory(uploads);
+
+                var nuevasImagenes = new List<string>();
+
+                foreach (var file in files)
                 {
-                    var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                    if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
-                    var saved = new List<string>();
-                    foreach (var file in files)
+                    if (file.Length <= 0) continue;
+
+                    var ext = Path.GetExtension(file.FileName);
+                    var fileName = $"{Guid.NewGuid()}{ext}";
+                    var filePath = Path.Combine(uploads, fileName);
+
+                    using (var stream = System.IO.File.Create(filePath))
                     {
-                        if (file.Length <= 0) continue;
-                        var ext = Path.GetExtension(file.FileName);
-                        var fileName = $"{Guid.NewGuid()}{ext}";
-                        var filePath = Path.Combine(uploads, fileName);
-                        using (var stream = System.IO.File.Create(filePath))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                        saved.Add(fileName);
+                        await file.CopyToAsync(stream);
                     }
-                    if (saved.Count > 0)
-                    {
-                        evento.Images = string.IsNullOrWhiteSpace(evento.Images) ? string.Join(';', saved) : evento.Images + ";" + string.Join(';', saved);
-                    }
+
+                    nuevasImagenes.Add(fileName);
                 }
 
-                try
+                if (nuevasImagenes.Count > 0)
                 {
-                    _context.Update(evento);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!EventoExists(evento.EventoId))
-                    {
-                        if (isAjax) return Json(new { success = false, message = "Evento no encontrado." });
-                        return NotFound();
-                    }
+                    if (string.IsNullOrWhiteSpace(eventoDb.Images))
+                        eventoDb.Images = string.Join(';', nuevasImagenes);
                     else
-                    {
-                        throw;
-                    }
+                        eventoDb.Images += ";" + string.Join(';', nuevasImagenes);
                 }
-                catch (DbUpdateException dbEx)
-                {
-                    // FK or DB error
-                    if (isAjax)
-                    {
-                        return Json(new { success = false, message = dbEx.InnerException?.Message ?? dbEx.Message });
-                    }
-                    throw;
-                }
-
-                if (isAjax)
-                {
-                    return Json(new
-                    {
-                        success = true,
-                        evento = new
-                        {
-                            id = evento.EventoId,
-                            nombre = evento.Nombre,
-                            fecha = evento.Fecha.ToString("yyyy-MM-dd"),
-                            hora = evento.Hora,
-                            lugar = evento.Lugar,
-                            maximo = evento.MaximoInvitados,
-                            descripcion = evento.Descripcion,
-                            categoria = evento.Categoria,
-                            estado = evento.Estado.ToString()
-                        }
-                    });
-                }
-
-                return RedirectToAction(nameof(Index));
             }
 
-            ViewData["OrganizadorId"] = new SelectList(_context.Usuarios, "UsuarioId", "Email", evento.OrganizadorId);
-            ViewData["Estados"] = Enum.GetNames(typeof(Models.EventoEstado)).ToList();
+            // 💾 GUARDAR
+            await _context.SaveChangesAsync();
 
-            if (isAjax)
-            {
-                // Return partial with validation messages
-                return PartialView("_EditPartial", evento);
-            }
-
-            return View(evento);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Eventoes/Delete/5
