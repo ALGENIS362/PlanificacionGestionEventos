@@ -59,15 +59,30 @@
             <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#invitadosModal" data-eventid="@Model.EventoId">Invitados</button>
             @{
                 var userIdClaim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                int.TryParse(userIdClaim, out var currentUserId);
-                if (User.IsInRole("Admin") || (User.IsInRole("Organizador") && Model.OrganizadorId == currentUserId))
+
+                int currentUserId = 0;
+                if (!string.IsNullOrEmpty(userIdClaim))
                 {
-                    <button type="button" class="btn btn-success btn-sm edit-event-btn" data-eventid="@Model.EventoId">Editar</button>
-                    <form asp-action="Delete" asp-route-id="@Model.EventoId" method="post" class="d-inline" onsubmit="return confirm('¿Confirmas que deseas eliminar este evento?');">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                    </form>
+                    currentUserId = int.Parse(userIdClaim);
                 }
+            }
+
+            @if (User?.Identity?.IsAuthenticated == true
+                        && User.IsInRole("Organizador")
+                        && Model != null
+                        && Model.OrganizadorId == currentUserId)
+            {
+                <button type="button" class="btn btn-success btn-sm edit-event-btn" data-eventid="@Model.EventoId">
+                    ✏ Editar
+                </button>
+
+                <form asp-action="Delete" asp-route-id="@Model.EventoId" method="post" class="d-inline"
+                      onsubmit="return confirm('¿Confirmas que deseas eliminar este evento?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm shadow-sm">
+                        🗑 Eliminar
+                    </button>
+                </form>
             }
         </div>
     </div>
