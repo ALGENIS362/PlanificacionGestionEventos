@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PlanificacionGestionEventos.Data;
 using PlanificacionGestionEventos.Models;
@@ -48,7 +49,7 @@ namespace PlanificacionGestionEventos.Controllers
         // FORMULARIO CREAR
         public IActionResult Create()
         {
-            ViewBag.Eventos = _context.Eventos.ToList();
+            ViewBag.EventoId = new SelectList(_context.Eventos, "EventoId", "Nombre");
             return View();
         }
 
@@ -78,6 +79,12 @@ namespace PlanificacionGestionEventos.Controllers
             // 🔒 VALIDAR QUE EL EVENTO ES DEL ORGANIZADOR
             if (evento.OrganizadorId != userId)
                 return Unauthorized();
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.EventoId = new SelectList(_context.Eventos, "EventoId", "Nombre", invitacion.EventoId);
+                return View(invitacion);
+            }
 
             // ✅ GUARDAR
             if (ModelState.IsValid)
