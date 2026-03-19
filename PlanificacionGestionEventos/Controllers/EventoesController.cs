@@ -149,14 +149,15 @@ namespace PlanificacionGestionEventos.Controllers
             return View();
         }
 
-        // POST: Eventoes/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("EventoId,Nombre,Fecha,Hora,Lugar,Descripcion,Categoria,MaximoInvitados,OrganizadorId,Estado")] Evento evento)
         {
-            var isAjax = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", System.StringComparison.OrdinalIgnoreCase);
+            var isAjax = string.Equals(
+                Request.Headers["X-Requested-With"],
+                "XMLHttpRequest",
+                System.StringComparison.OrdinalIgnoreCase
+            );
 
             if (ModelState.IsValid)
             {
@@ -170,35 +171,53 @@ namespace PlanificacionGestionEventos.Controllers
                     }
                 }
 
-                // Verificar que el Organizador existe para evitar violación FK
+                // Verificar que el Organizador existe
                 var organizadorExists = await _context.Usuarios.AnyAsync(u => u.UsuarioId == evento.OrganizadorId);
                 if (!organizadorExists)
                 {
                     ModelState.AddModelError("OrganizadorId", "El organizador seleccionado no existe.");
+
                     ViewData["OrganizadorId"] = new SelectList(_context.Usuarios, "UsuarioId", "Email", evento.OrganizadorId);
                     ViewData["Estados"] = Enum.GetNames(typeof(Models.EventoEstado)).ToList();
+
+                    if (User.IsInRole("Organizador"))
+                    {
+                        ViewBag.CurrentOrganizadorId = evento.OrganizadorId;
+                    }
+
+                    if (isAjax)
+                        return PartialView("_CreatePartial", evento);
+
                     return View(evento);
                 }
 
-                // Save uploaded files
+                // Guardar imágenes
                 var files = Request.Form.Files;
                 if (files != null && files.Count > 0)
                 {
                     var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                    if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
+
+                    if (!Directory.Exists(uploads))
+                        Directory.CreateDirectory(uploads);
+
                     var saved = new List<string>();
+
                     foreach (var file in files)
                     {
                         if (file.Length <= 0) continue;
+
                         var ext = Path.GetExtension(file.FileName);
                         var fileName = $"{Guid.NewGuid()}{ext}";
                         var filePath = Path.Combine(uploads, fileName);
+
                         using (var stream = System.IO.File.Create(filePath))
                         {
                             await file.CopyToAsync(stream);
                         }
+
                         saved.Add(fileName);
                     }
+
                     if (saved.Count > 0)
                     {
                         evento.Images = string.Join(';', saved);
@@ -210,9 +229,7 @@ namespace PlanificacionGestionEventos.Controllers
 
                 if (isAjax)
                 {
-                    // return rendered card partial so client can insert HTML with antiforgery tokens present
                     var organizador = await _context.Usuarios.FindAsync(evento.OrganizadorId);
-                    // include Organizador navigation
                     evento.Organizador = organizador;
                     return PartialView("_EventoCardPartial", evento);
                 }
@@ -220,8 +237,18 @@ namespace PlanificacionGestionEventos.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            // Si el modelo es inválido, volver a cargar combos
             ViewData["OrganizadorId"] = new SelectList(_context.Usuarios, "UsuarioId", "Email", evento.OrganizadorId);
             ViewData["Estados"] = Enum.GetNames(typeof(Models.EventoEstado)).ToList();
+
+            if (User.IsInRole("Organizador"))
+            {
+                ViewBag.CurrentOrganizadorId = evento.OrganizadorId;
+            }
+
+            if (isAjax)
+                return PartialView("_CreatePartial", evento);
+
             return View(evento);
         }
 
@@ -337,7 +364,8 @@ namespace PlanificacionGestionEventos.Controllers
             // 💾 GUARDAR
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            //eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+            return Json(new { success = true });
         }
 
         // GET: Eventoes/Delete/5

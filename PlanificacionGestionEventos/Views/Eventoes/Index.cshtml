@@ -90,52 +90,51 @@
     }
 </style>
 
-    <div>
+<div>
     <h2 class="text-3xl text-white">Mis Eventos</h2>
-        <p class="text-secondary">Gestiona todos tus eventos</p>
-    </div>
+    <p class="text-secondary">Gestiona todos tus eventos</p>
+</div>
 
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
-        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <strong class="me-auto">Eventos</strong>
-                <small>Ahora</small>
-                <button type="button" class="btn-close ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Eventos</strong>
+            <small>Ahora</small>
+            <button type="button" class="btn-close ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastBody">
+            Accion completada
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editEventoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="toast-body" id="toastBody">
-                Accion completada
+            <div class="modal-body" id="editModalBody">
+                <div class="text-center p-4">Cargando...</div>
             </div>
         </div>
     </div>
-    
-    <div class="modal fade" id="editEventoModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Evento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="editModalBody">
-                    <div class="text-center p-4">Cargando...</div>
-                </div>
-            </div>
-        </div>
-    </div>
+</div>
 
-    <button class="btn-crear" data-bs-toggle="modal" data-bs-target="#crearEventoModal">
-        + Crear Evento
-    </button>
+<button class="btn-crear" data-bs-toggle="modal" data-bs-target="#crearEventoModal">
+    + Crear Evento
+</button>
 
-    <div class="filtros">
-        <button class="filter-btn" onclick="filterEvents('all')">Todos</button>
-        <button class="filter-btn" onclick="filterEvents('Activo')">Activos</button>
-        <button class="filter-btn" onclick="filterEvents('Completado')">Completados</button>
-        <button class="filter-btn" onclick="filterEvents('Cancelado')">Cancelados</button>
-    </div>
+<div class="filtros">
+    <button class="filter-btn" onclick="filterEvents('all')">Todos</button>
+    <button class="filter-btn" onclick="filterEvents('Activo')">Activos</button>
+    <button class="filter-btn" onclick="filterEvents('Completado')">Completados</button>
+    <button class="filter-btn" onclick="filterEvents('Cancelado')">Cancelados</button>
+</div>
 
-    <div class="contenedor-scroll">
+<div class="contenedor-scroll">
     <div id="events-grid" class="grid-eventos">
-
         @if (Model != null && Model.Any())
         {
             foreach (var item in Model)
@@ -153,9 +152,7 @@
     </div>
 </div>
 
-    <div class="pag_episodes">
-
-    @* Botón Anterior *@
+<div class="pag_episodes">
     @if (ViewBag.CurrentPage > 1)
     {
         <a class="page-btn" href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })">
@@ -163,7 +160,6 @@
         </a>
     }
 
-    @* Números de páginas *@
     @for (int i = 1; i <= ViewBag.TotalPages; i++)
     {
         if (i == ViewBag.CurrentPage)
@@ -178,7 +174,6 @@
         }
     }
 
-    @* Botón Siguiente *@
     @if (ViewBag.CurrentPage < ViewBag.TotalPages)
     {
         <a class="page-btn" href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })">
@@ -187,250 +182,27 @@
     }
 </div>
 
-    <div class="modal fade" id="invitadosModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Buscar Invitados por Email</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="invitadosModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Buscar Invitados por Email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input id="buscarEmail" class="form-control" placeholder="Escribe el correo del invitado" />
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <input id="buscarEmail" class="form-control" placeholder="Escribe el correo del invitado" />
-                    </div>
-                    <div id="resultadosInvitados">
-                        <p class="text-muted">Escribe un email para buscar usuarios con rol "Invitado"</p>
-                    </div>
+                <div id="resultadosInvitados">
+                    <p class="text-muted">Escribe un email para buscar usuarios con rol "Invitado"</p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
-
-<script>
-    function filterEvents(category){
-        let eventos = document.querySelectorAll(".card-evento");
-        eventos.forEach(function(evento){
-            let state = evento.getAttribute("data-state");
-            if(category === "all" || state === category){
-                evento.style.display = "block";
-            }else{
-                evento.style.display = "none";
-            }
-        });
-    }
-
-    document.addEventListener('click', function(e){
-        var btn = e.target.closest('.delete-image-btn');
-        if (!btn) return;
-        var filename = btn.getAttribute('data-filename');
-        var form = btn.closest('form') || document.getElementById('editEventoForm');
-        var token = form ? form.querySelector('input[name="__RequestVerificationToken"]')?.value : null;
-        var eventoId = form ? form.querySelector('input[name="EventoId"]')?.value : null;
-        if (!filename || !eventoId) { alert('Datos inválidos'); return; }
-        if (!confirm('¿Eliminar imagen?')) return;
-        var fd = new FormData();
-        fd.append('eventoId', eventoId);
-        fd.append('filename', filename);
-        if (token) fd.append('__RequestVerificationToken', token);
-        fetch('/Eventoes/DeleteImage', { method: 'POST', credentials: 'same-origin', body: fd })
-            .then(r => r.json())
-            .then(j => {
-                if (j && j.success) {
-                    // remove card
-                   var card = btn.closest('.card-evento');
-                    if (card) card.remove();
-                } else {
-                    alert(j.message || 'Error al eliminar imagen');
-                }
-            })
-            .catch(function(){ alert('Error al eliminar imagen'); });
-    });
-
-    document.addEventListener('click', function(e){
-        var btn = e.target.closest('.edit-event-btn');
-        if (!btn) return;
-        var eventId = btn.getAttribute('data-eventid');
-        var editModal = document.getElementById('editEventoModal');
-        var editBody = document.getElementById('editModalBody');
-        editBody.innerHTML = '<div class="text-center p-4">Cargando...</div>';
-        fetch('/Eventoes/EditModal?id=' + encodeURIComponent(eventId), { credentials: 'same-origin' })
-            .then(function(r){ if (!r.ok) throw new Error('Error cargando formulario'); return r.text(); })
-            .then(function(html){
-                editBody.innerHTML = html;
-            })
-            .catch(function(){ editBody.innerHTML = '<div class="text-danger">No se pudo cargar el formulario.</div>'; });
-        var bm = new bootstrap.Modal(editModal);
-        bm.show();
-    });
-
-    document.addEventListener('submit', function(e){
-        var form = e.target;
-        if (!form || form.id !== 'editEventoForm') return;
-        e.preventDefault();
-
-        var action = form.action;
-        var hasFiles = false;
-        form.querySelectorAll('input[type="file"]').forEach(function(fi){ if (fi.files && fi.files.length>0) hasFiles = true; });
-
-           function handleResponse(res){
-        if (typeof res === 'object' && res.success){
-            location.reload(); // 🔥 AQUÍ VA
-            return;
-        } else {
-            var modalBody = document.getElementById('editModalBody');
-            modalBody.innerHTML = res;
-        }
-    }
-
-        if (hasFiles){
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', action);
-            xhr.withCredentials = true;
-            xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
-            var tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
-            if (tokenInput) xhr.setRequestHeader('RequestVerificationToken', tokenInput.value);
-            var progressContainer = document.getElementById('editProgressContainer');
-            var progressBar = document.getElementById('editProgressBar');
-            xhr.upload.onprogress = function(e){ if (e.lengthComputable){ progressContainer.style.display='block'; var pct = Math.round((e.loaded/e.total)*100); progressBar.style.width = pct+'%'; } };
-            xhr.onload = function(){ var ct = xhr.getResponseHeader('content-type')||''; var text = xhr.responseText; var parsed = text; if (ct.indexOf('application/json')!==-1) parsed = JSON.parse(text); handleResponse(parsed); progressContainer.style.display='none'; progressBar.style.width='0%'; };
-            xhr.onerror = function(){ alert('Error al guardar.'); progressContainer.style.display='none'; progressBar.style.width='0%'; };
-            xhr.send(new FormData(form));
-        } else {
-            fetch(action, { method:'POST', credentials:'same-origin', headers:{ 'X-Requested-With':'XMLHttpRequest' }, body:new FormData(form) })
-            .then(function(r){ var ct = r.headers.get('content-type')||''; if (ct.indexOf('application/json')!==-1) return r.json(); return r.text(); })
-            .then(function(result){ handleResponse(result); })
-            .catch(function(){ alert('Error al guardar.'); });
-        }
-    });
-
-    document.addEventListener('submit', function(e){
-        var form = e.target;
-        if (!form || form.id !== 'createEventoForm') return;
-        e.preventDefault();
-        var action = form.action;
-        var hasFiles = false;
-        form.querySelectorAll('input[type="file"]').forEach(function(fi){ if (fi.files && fi.files.length>0) hasFiles = true; });
-
-        function handleCreateResponse(res){
-            if (typeof res === 'string'){
-                var container = document.getElementById('events-grid');
-                var wrapper = document.createElement('div');
-                wrapper.innerHTML = res;
-                while (wrapper.firstChild) container.insertBefore(wrapper.firstChild, container.firstChild);
-                var createModalEl = document.getElementById('crearEventoModal');
-                var modalInstance = bootstrap.Modal.getInstance(createModalEl);
-                if (modalInstance) modalInstance.hide();
-                var toastEl = document.getElementById('liveToast');
-                document.getElementById('toastBody').textContent = 'Evento creado correctamente';
-                var toast = new bootstrap.Toast(toastEl); toast.show();
-            } else if (typeof res === 'object' && res.success) {
-                // not used currently
-            } else {
-                var modalBody = document.querySelector('#crearEventoModal .modal-body');
-                modalBody.innerHTML = res;
-            }
-        }
-
-        if (hasFiles){
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', action);
-            xhr.withCredentials = true;
-            xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
-            var tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
-            if (tokenInput) xhr.setRequestHeader('RequestVerificationToken', tokenInput.value);
-            var progressContainer = document.getElementById('createProgressContainer');
-            var progressBar = document.getElementById('createProgressBar');
-            xhr.upload.onprogress = function(e){ if (e.lengthComputable){ progressContainer.style.display='block'; var pct = Math.round((e.loaded/e.total)*100); progressBar.style.width = pct+'%'; } };
-            xhr.onload = function(){ var ct = xhr.getResponseHeader('content-type')||''; var text = xhr.responseText; var parsed = text; if (ct.indexOf('text/html')!==-1) parsed = text; else if (ct.indexOf('application/json')!==-1) parsed = JSON.parse(text); handleCreateResponse(parsed); progressContainer.style.display='none'; progressBar.style.width='0%'; };
-            xhr.onerror = function(){ alert('Error al crear evento.'); progressContainer.style.display='none'; progressBar.style.width='0%'; };
-            xhr.send(new FormData(form));
-        } else {
-            fetch(action, { method:'POST', credentials:'same-origin', headers:{ 'X-Requested-With':'XMLHttpRequest' }, body:new FormData(form) })
-            .then(function(r){ var ct = r.headers.get('content-type')||''; if (ct.indexOf('text/html')!==-1) return r.text(); return r.json(); })
-            .then(function(result){ handleCreateResponse(result); })
-            .catch(function(){ alert('Error al crear evento.'); });
-        }
-    });
-
-    var invitadosModal = document.getElementById('invitadosModal');
-    var currentEventoId = null;
-    invitadosModal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget;
-        currentEventoId = button.getAttribute('data-eventid');
-        document.getElementById('buscarEmail').value = '';
-        document.getElementById('resultadosInvitados').innerHTML = '<p class="text-muted">Escribe un email para buscar usuarios con rol "Invitado"</p>';
-    });
-
-    var timeout = null;
-    document.getElementById('buscarEmail').addEventListener('input', function(e){
-        var email = e.target.value;
-        if (timeout) clearTimeout(timeout);
-        timeout = setTimeout(function(){
-            if(!email || email.length < 3){
-                document.getElementById('resultadosInvitados').innerHTML = '<p class="text-muted">Escribe al menos 3 caracteres para buscar</p>';
-                return;
-            }
-            fetch('/Invitacions/SearchInvitados?email=' + encodeURIComponent(email) + '&eventoId=' + currentEventoId)
-                .then(r => r.json())
-                .then(data => {
-                    if(!data || data.length === 0){
-                        document.getElementById('resultadosInvitados').innerHTML = '<p class="text-muted">No se encontraron invitados con ese email.</p>';
-                        return;
-                    }
-                    var html = '<div class="list-group">';
-                    data.forEach(function(u){
-                        html += '<div class="list-group-item">';
-                        html += '<div class="d-flex w-100 justify-content-between">';
-                        html += '<h5 class="mb-1">' + (u.NombreCompleto || u.Email) + '</h5>';
-                        html += '<small>' + (u.Telefono || '') + '</small>';
-                        html += '</div>';
-                        html += '<p class="mb-1">' + u.Email + '</p>';
-                        html += '</div>';
-                    });
-                    html += '</div>';
-                    document.getElementById('resultadosInvitados').innerHTML = html;
-                });
-        }, 400);
-    });
-
-    document.addEventListener('click', function(e){
-        var btn = e.target.closest('.view-gallery-btn');
-        if (!btn) return;
-        var card = btn.closest('.card-evento');
-        if (!card) return;
-        var images = card.getAttribute('data-images') || '';
-        var modal = document.getElementById('galleryModal');
-        var body = document.getElementById('galleryModalBody');
-        if (!images) {
-            body.innerHTML = '<p class="text-muted">No hay imágenes para este evento.</p>';
-        } else {
-            var imgs = images.split(';').filter(function(s){ return s && s.trim().length>0; });
-            if (imgs.length === 0) {
-                body.innerHTML = '<p class="text-muted">No hay imágenes para este evento.</p>';
-            } else {
-                var html = '<div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">\n<div class="carousel-inner">';
-                imgs.forEach(function(img, idx){
-                    html += '<div class="carousel-item ' + (idx===0? 'active' : '') + '">';
-                    html += '<img src="/uploads/' + encodeURIComponent(img) + '" class="d-block w-100" style="max-height:500px; object-fit:cover;" />';
-                    html += '</div>';
-                });
-                html += '</div>';
-                html += '<button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">';
-                html += '<span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button>';
-                html += '<button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">';
-                html += '<span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>';
-                html += '</div>';
-                body.innerHTML = html;
-            }
-        }
-        var bm = new bootstrap.Modal(modal);
-        bm.show();
-    });
-
-</script>
+</div>
 
 <div class="modal fade" id="galleryModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
@@ -455,96 +227,341 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
-            <div class="modal-body">
-
-                <form asp-action="Create" method="post" id="createEventoForm" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
-                    <div class="mb-3">
-                        <label>Nombre del Evento</label>
-                        <input name="Nombre" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Fecha</label>
-                        <input name="Fecha" type="date" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Hora</label>
-                        <input type="time" name="Hora" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Lugar</label>
-                        <input name="Lugar" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Descripción</label>
-                        <textarea name="Descripcion" class="form-control"></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Categoría</label>
-                        <select name="Categoria" class="form-control">
-                            <option value="">Seleccione</option>
-                            <option value="Socio">Socio</option>
-                            <option value="Negocios">Negocios</option>
-                            <option value="Boda">Boda</option>
-                            <option value="Cumpleaños">Cumpleaños</option>
-                            <option value="Reunión">Reunión</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Máximo de Invitados</label>
-                        <input type="number" name="MaximoInvitados" class="form-control" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Imágenes</label>
-                        <input type="file" name="Images" multiple class="form-control" />
-                        <div class="progress mt-2" style="height:6px; display:none;" id="createProgressContainer">
-                            <div class="progress-bar" role="progressbar" style="width: 0%;" id="createProgressBar"></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Estado</label>
-                        <select name="Estado" class="form-control">
-                            @if (ViewData["Estados"] is IEnumerable<string> estados)
-                            {
-                                foreach (var e in estados)
-                                {
-                                    var enumVal = (int)Enum.Parse(typeof(PlanificacionGestionEventos.Models.EventoEstado), e);
-                                    <option value="@enumVal">@e</option>
-                                }
-                            }
-                        </select>
-                    </div>
-
-                    @* Organizador: hidden for current organizer or dropdown for admin *@
-                    @if (ViewBag.CurrentOrganizadorId != null)
-                    {
-                        <input type="hidden" name="OrganizadorId" value="@ViewBag.CurrentOrganizadorId" />
-                    }
-                    else if (ViewData["Organizadores"] is SelectList orgs)
-                    {
-                        <div class="mb-3">
-                            <label>Organizador</label>
-                            @Html.DropDownList("OrganizadorId", orgs, "-- Seleccionar --", new { @class = "form-control" })
-                        </div>
-                    }
-
-                    <button type="submit" class="btn btn-primary">
-                        Guardar Evento
-                    </button>
-
-                    <div>
-                        <a asp-action="Index">Cancelar</a>
-                    </div>
-                </form>
+            <div class="modal-body" id="createModalBody">
+                <partial name="_CreatePartial" model="new PlanificacionGestionEventos.Models.Evento()" />
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function filterEvents(category) {
+        let eventos = document.querySelectorAll(".card-evento");
+        eventos.forEach(function (evento) {
+            let state = evento.getAttribute("data-state");
+            if (category === "all" || state === category) {
+                evento.style.display = "block";
+            } else {
+                evento.style.display = "none";
+            }
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.delete-image-btn');
+        if (!btn) return;
+        var filename = btn.getAttribute('data-filename');
+        var form = btn.closest('form') || document.getElementById('editEventoForm');
+        var token = form ? form.querySelector('input[name="__RequestVerificationToken"]')?.value : null;
+        var eventoId = form ? form.querySelector('input[name="EventoId"]')?.value : null;
+        if (!filename || !eventoId) { alert('Datos inválidos'); return; }
+        if (!confirm('¿Eliminar imagen?')) return;
+
+        var fd = new FormData();
+        fd.append('eventoId', eventoId);
+        fd.append('filename', filename);
+        if (token) fd.append('__RequestVerificationToken', token);
+
+        fetch('/Eventoes/DeleteImage', { method: 'POST', credentials: 'same-origin', body: fd })
+            .then(r => r.json())
+            .then(j => {
+                if (j && j.success) {
+                    var card = btn.closest('.card-evento');
+                    if (card) card.remove();
+                } else {
+                    alert(j.message || 'Error al eliminar imagen');
+                }
+            })
+            .catch(function () { alert('Error al eliminar imagen'); });
+    });
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.edit-event-btn');
+        if (!btn) return;
+        var eventId = btn.getAttribute('data-eventid');
+        var editModal = document.getElementById('editEventoModal');
+        var editBody = document.getElementById('editModalBody');
+        editBody.innerHTML = '<div class="text-center p-4">Cargando...</div>';
+
+        fetch('/Eventoes/EditModal?id=' + encodeURIComponent(eventId), { credentials: 'same-origin' })
+            .then(function (r) { if (!r.ok) throw new Error('Error cargando formulario'); return r.text(); })
+            .then(function (html) { editBody.innerHTML = html; })
+            .catch(function () { editBody.innerHTML = '<div class="text-danger">No se pudo cargar el formulario.</div>'; });
+
+        var bm = new bootstrap.Modal(editModal);
+        bm.show();
+    });
+
+    document.addEventListener('submit', function (e) {
+        var form = e.target;
+        if (!form || form.id !== 'editEventoForm') return;
+        e.preventDefault();
+
+        var action = form.action;
+        var hasFiles = false;
+        form.querySelectorAll('input[type="file"]').forEach(function (fi) {
+            if (fi.files && fi.files.length > 0) hasFiles = true;
+        });
+
+        function handleResponse(res) {
+            if (typeof res === 'object' && res.success) {
+                location.reload();
+                return;
+            } else {
+                var modalBody = document.getElementById('editModalBody');
+                modalBody.innerHTML = res;
+            }
+        }
+
+        if (hasFiles) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', action);
+            xhr.withCredentials = true;
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            var tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+            if (tokenInput) xhr.setRequestHeader('RequestVerificationToken', tokenInput.value);
+            var progressContainer = document.getElementById('editProgressContainer');
+            var progressBar = document.getElementById('editProgressBar');
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    progressContainer.style.display = 'block';
+                    var pct = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = pct + '%';
+                }
+            };
+
+            xhr.onload = function () {
+                var ct = xhr.getResponseHeader('content-type') || '';
+                var text = xhr.responseText;
+                var parsed = text;
+                if (ct.indexOf('application/json') !== -1) parsed = JSON.parse(text);
+                handleResponse(parsed);
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+            };
+
+            xhr.onerror = function () {
+                alert('Error al guardar.');
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+            };
+
+            xhr.send(new FormData(form));
+        } else {
+            fetch(action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: new FormData(form)
+            })
+            .then(function (r) {
+                var ct = r.headers.get('content-type') || '';
+                if (ct.indexOf('application/json') !== -1) return r.json();
+                return r.text();
+            })
+            .then(function (result) { handleResponse(result); })
+            .catch(function () { alert('Error al guardar.'); });
+        }
+    });
+
+    document.addEventListener('submit', function (e) {
+        var form = e.target;
+        if (!form || form.id !== 'createEventoForm') return;
+        e.preventDefault();
+
+        var action = form.action;
+        var hasFiles = false;
+        form.querySelectorAll('input[type="file"]').forEach(function (fi) {
+            if (fi.files && fi.files.length > 0) hasFiles = true;
+        });
+
+        function resetCreateModal() {
+            fetch('/Eventoes/Create', { credentials: 'same-origin' })
+                .then(function (r) { return r.text(); })
+                .then(function (html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var newForm = doc.querySelector('#createEventoForm');
+                    var modalBody = document.getElementById('createModalBody');
+
+                    if (newForm && modalBody) {
+                        modalBody.innerHTML = newForm.outerHTML;
+                    }
+                });
+        }
+
+        function handleCreateResponse(res) {
+            if (typeof res === 'string') {
+                if (res.includes('card-evento')) {
+                    var container = document.getElementById('events-grid');
+                    var wrapper = document.createElement('div');
+                    wrapper.innerHTML = res;
+
+                    while (wrapper.firstChild) {
+                        container.insertBefore(wrapper.firstChild, container.firstChild);
+                    }
+
+                    var createModalEl = document.getElementById('crearEventoModal');
+                    var modalInstance = bootstrap.Modal.getInstance(createModalEl);
+
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+
+                    createModalEl.classList.remove('show');
+                    createModalEl.setAttribute('aria-hidden', 'true');
+                    createModalEl.style.display = 'none';
+
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('padding-right');
+                    document.querySelectorAll('.modal-backdrop').forEach(function (x) {
+                        x.remove();
+                    });
+
+                    resetCreateModal();
+
+                    var toastEl = document.getElementById('liveToast');
+                    document.getElementById('toastBody').textContent = 'Evento creado correctamente';
+                    var toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                } else {
+                    var modalBody = document.getElementById('createModalBody');
+                    modalBody.innerHTML = res;
+                }
+            } else {
+                var modalBody = document.getElementById('createModalBody');
+                modalBody.innerHTML = res;
+            }
+        }
+
+        if (hasFiles) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', action);
+            xhr.withCredentials = true;
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            var tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+            if (tokenInput) xhr.setRequestHeader('RequestVerificationToken', tokenInput.value);
+            var progressContainer = document.getElementById('createProgressContainer');
+            var progressBar = document.getElementById('createProgressBar');
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    progressContainer.style.display = 'block';
+                    var pct = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = pct + '%';
+                }
+            };
+
+            xhr.onload = function () {
+                var ct = xhr.getResponseHeader('content-type') || '';
+                var text = xhr.responseText;
+                var parsed = text;
+                if (ct.indexOf('text/html') !== -1) parsed = text;
+                else if (ct.indexOf('application/json') !== -1) parsed = JSON.parse(text);
+                handleCreateResponse(parsed);
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+            };
+
+            xhr.onerror = function () {
+                alert('Error al crear evento.');
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+            };
+
+            xhr.send(new FormData(form));
+        } else {
+            fetch(action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: new FormData(form)
+            })
+            .then(function (r) {
+                var ct = r.headers.get('content-type') || '';
+                if (ct.indexOf('text/html') !== -1) return r.text();
+                return r.json();
+            })
+            .then(function (result) { handleCreateResponse(result); })
+            .catch(function () { alert('Error al crear evento.'); });
+        }
+    });
+
+    var invitadosModal = document.getElementById('invitadosModal');
+    var currentEventoId = null;
+    invitadosModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        currentEventoId = button.getAttribute('data-eventid');
+        document.getElementById('buscarEmail').value = '';
+        document.getElementById('resultadosInvitados').innerHTML = '<p class="text-muted">Escribe un email para buscar usuarios con rol "Invitado"</p>';
+    });
+
+    var timeout = null;
+    document.getElementById('buscarEmail').addEventListener('input', function (e) {
+        var email = e.target.value;
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            if (!email || email.length < 3) {
+                document.getElementById('resultadosInvitados').innerHTML = '<p class="text-muted">Escribe al menos 3 caracteres para buscar</p>';
+                return;
+            }
+            fetch('/Invitacions/SearchInvitados?email=' + encodeURIComponent(email) + '&eventoId=' + currentEventoId)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data || data.length === 0) {
+                        document.getElementById('resultadosInvitados').innerHTML = '<p class="text-muted">No se encontraron invitados con ese email.</p>';
+                        return;
+                    }
+                    var html = '<div class="list-group">';
+                    data.forEach(function (u) {
+                        html += '<div class="list-group-item">';
+                        html += '<div class="d-flex w-100 justify-content-between">';
+                        html += '<h5 class="mb-1">' + (u.NombreCompleto || u.Email) + '</h5>';
+                        html += '<small>' + (u.Telefono || '') + '</small>';
+                        html += '</div>';
+                        html += '<p class="mb-1">' + u.Email + '</p>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                    document.getElementById('resultadosInvitados').innerHTML = html;
+                });
+        }, 400);
+    });
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.view-gallery-btn');
+        if (!btn) return;
+        var card = btn.closest('.card-evento');
+        if (!card) return;
+        var images = card.getAttribute('data-images') || '';
+        var modal = document.getElementById('galleryModal');
+        var body = document.getElementById('galleryModalBody');
+
+        if (!images) {
+            body.innerHTML = '<p class="text-muted">No hay imágenes para este evento.</p>';
+        } else {
+            var imgs = images.split(';').filter(function (s) { return s && s.trim().length > 0; });
+            if (imgs.length === 0) {
+                body.innerHTML = '<p class="text-muted">No hay imágenes para este evento.</p>';
+            } else {
+                var html = '<div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel"><div class="carousel-inner">';
+                imgs.forEach(function (img, idx) {
+                    html += '<div class="carousel-item ' + (idx === 0 ? 'active' : '') + '">';
+                    html += '<img src="/uploads/' + encodeURIComponent(img) + '" class="d-block w-100" style="max-height:500px; object-fit:cover;" />';
+                    html += '</div>';
+                });
+                html += '</div>';
+                html += '<button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">';
+                html += '<span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button>';
+                html += '<button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">';
+                html += '<span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>';
+                html += '</div>';
+                body.innerHTML = html;
+            }
+        }
+
+        var bm = new bootstrap.Modal(modal);
+        bm.show();
+    });
+</script>

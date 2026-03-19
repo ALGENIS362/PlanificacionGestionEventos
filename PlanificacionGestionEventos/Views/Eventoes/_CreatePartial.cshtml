@@ -1,0 +1,94 @@
+﻿@model PlanificacionGestionEventos.Models.Evento
+
+<form asp-action="Create" method="post" id="createEventoForm" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label>Nombre del Evento</label>
+        <input asp-for="Nombre" class="form-control" />
+        <span asp-validation-for="Nombre" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Fecha</label>
+        <input asp-for="Fecha" type="date" class="form-control" />
+        <span asp-validation-for="Fecha" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Hora</label>
+        <input asp-for="Hora" type="time" class="form-control" />
+        <span asp-validation-for="Hora" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Lugar</label>
+        <input asp-for="Lugar" class="form-control" />
+        <span asp-validation-for="Lugar" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Descripción</label>
+        <textarea asp-for="Descripcion" class="form-control"></textarea>
+        <span asp-validation-for="Descripcion" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Categoría</label>
+        <select asp-for="Categoria" class="form-control">
+            <option value="">Seleccione</option>
+            <option value="Socio">Socio</option>
+            <option value="Negocios">Negocios</option>
+            <option value="Boda">Boda</option>
+            <option value="Cumpleaños">Cumpleaños</option>
+            <option value="Reunión">Reunión</option>
+        </select>
+        <span asp-validation-for="Categoria" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Máximo de Invitados</label>
+        <input asp-for="MaximoInvitados" type="number" class="form-control" />
+        <span asp-validation-for="MaximoInvitados" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Imágenes</label>
+        <input type="file" name="Images" multiple class="form-control" />
+        <div class="progress mt-2" style="height:6px; display:none;" id="createProgressContainer">
+            <div class="progress-bar" role="progressbar" style="width: 0%;" id="createProgressBar"></div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Estado</label>
+        <select asp-for="Estado" class="form-control">
+            @if (ViewData["Estados"] is IEnumerable<string> estados)
+            {
+                foreach (var e in estados)
+                {
+                    var enumVal = (int)Enum.Parse(typeof(PlanificacionGestionEventos.Models.EventoEstado), e);
+                    <option value="@enumVal">@e</option>
+                }
+            }
+        </select>
+        <span asp-validation-for="Estado" class="text-danger"></span>
+    </div>
+
+    @if (ViewBag.CurrentOrganizadorId != null)
+    {
+        <input type="hidden" asp-for="OrganizadorId" value="@ViewBag.CurrentOrganizadorId" />
+    }
+    else if (ViewData["OrganizadorId"] is SelectList orgs)
+    {
+        <div class="mb-3">
+            <label>Organizador</label>
+            @Html.DropDownListFor(m => m.OrganizadorId, orgs, "-- Seleccionar --", new { @class = "form-control" })
+            <span asp-validation-for="OrganizadorId" class="text-danger"></span>
+        </div>
+    }
+
+    <button type="submit" class="btn btn-primary">Guardar Evento</button>
+</form>
