@@ -90,7 +90,7 @@
 
             <div class="form-group">
                 <label>Correo del Invitado</label>
-                <input asp-for="CorreoInvitado" class="form-control" placeholder="correo@email.com" />
+                <select asp-for="UsuarioId" asp-items="ViewBag.Usuarios"></select>
             </div>
 
             <div class="form-group">

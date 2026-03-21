@@ -31,7 +31,7 @@ namespace PlanificacionGestionEventos.Controllers
             // autorización: solo Admin o propietario organizador
             var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
             int.TryParse(userIdClaim, out var currentUserId);
-            if (!(User.IsInRole("Admin") || (User.IsInRole("Organizador") && evento.OrganizadorId == currentUserId)))
+            if (!(User.IsInRole("Organizador") && evento.OrganizadorId == currentUserId))
             {
                 return Json(new { success = false, message = "No autorizado." });
             }
@@ -129,23 +129,20 @@ namespace PlanificacionGestionEventos.Controllers
         // GET: Eventoes/Create
         public IActionResult Create()
         {
-            // Si el usuario es Admin, mostrar dropdown de organizadores.
-            // Si es Organizador, asignaremos el OrganizadorId automáticamente y no mostraremos el dropdown.
-            if (User.IsInRole("Admin"))
-            {
-                ViewData["OrganizadorId"] = new SelectList(_context.Usuarios, "UsuarioId", "Email");
-            }
-            else if (User.IsInRole("Organizador"))
-            {
-                var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-                if (int.TryParse(userIdClaim, out var userId))
-                {
-                    ViewBag.CurrentOrganizadorId = userId;
-                }
-            }
+            if (!User.IsInRole("Organizador"))
+                return Unauthorized();
 
-            // provide estado options
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
+            int userId = int.Parse(userIdClaim);
+
+            ViewBag.CurrentOrganizadorId = userId;
+
             ViewData["Estados"] = Enum.GetNames(typeof(Models.EventoEstado)).ToList();
+
             return View();
         }
 
@@ -363,8 +360,6 @@ namespace PlanificacionGestionEventos.Controllers
 
             // 💾 GUARDAR
             await _context.SaveChangesAsync();
-
-            //eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
             return Json(new { success = true });
         }
 
@@ -401,7 +396,7 @@ namespace PlanificacionGestionEventos.Controllers
             var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
             int.TryParse(userIdClaim, out var userId);
 
-            if (!(User.IsInRole("Admin") || evento.OrganizadorId == userId))
+            if (!(User.IsInRole("Organizador") && evento.OrganizadorId == userId))
             {
                 return Unauthorized();
             }
