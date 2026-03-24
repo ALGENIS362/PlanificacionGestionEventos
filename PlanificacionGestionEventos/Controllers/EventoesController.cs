@@ -146,6 +146,7 @@ namespace PlanificacionGestionEventos.Controllers
             return View();
         }
 
+        // POST: Eventoes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("EventoId,Nombre,Fecha,Hora,Lugar,Descripcion,Categoria,MaximoInvitados,OrganizadorId,Estado")] Evento evento)

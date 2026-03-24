@@ -95,7 +95,9 @@
 
             <div class="form-group">
                 <label>Evento</label>
-                <select asp-for="EventoId" class="form-control" asp-items="ViewBag.EventoId"></select>
+                <select asp-for="EventoId" class="form-control" asp-items="ViewBag.EventoId">
+                    <option value="">-- Seleccione un evento --</option>
+                </select>
             </div>
 
             <div class="form-group">

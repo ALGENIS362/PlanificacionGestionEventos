@@ -33,8 +33,7 @@ namespace PlanificacionGestionEventos.Controllers
             return View(invitaciones);
         }
 
-        // FORMULARIO CREAR
-        // FORMULARIO CREAR
+        //GET FORMULARIO CREAR
         public IActionResult Create()
         {
             var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
@@ -42,16 +41,20 @@ namespace PlanificacionGestionEventos.Controllers
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
 
-            ViewBag.EventoId = new SelectList(
-                _context.Eventos,
-                "EventoId",
-                "Nombre"
-            );
+            // 🔥 SOLO EVENTOS DEL ORGANIZADOR LOGUEADO
+            var eventos = _context.Eventos
+                .Where(e => e.OrganizadorId == userId)
+                .ToList();
+
+            // 🔍 DEBUG (opcional)
+            Console.WriteLine("Eventos encontrados: " + eventos.Count);
+
+            ViewBag.EventoId = new SelectList(eventos, "EventoId", "Nombre");
 
             return View();
         }
 
-        // GUARDAR INVITACION
+        //POST GUARDAR INVITACION
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Invitacion invitacion)
