@@ -164,12 +164,9 @@
             <p class="text-secondary">Gestiona las invitaciones de tus eventos</p>
         </div>
 
-        <button class="btn-agregar"
-                data-bs-toggle="modal"
-                data-bs-target="#crearInvitadoModal">
+        <a asp-action="Create" class="btn-agregar">
             <i class="bi bi-person-plus"></i> Agregar Invitado
-
-        </button>
+        </a>
 
     </div>
 
@@ -265,11 +262,10 @@
                                 }
                             </td>
                             <td>
-                                <a asp-action="Delete"
-                                   asp-route-id="@item.InvitacionId"
-                                   class="btn-delete"
-                                   onclick="return confirm('¿Eliminar esta invitación?');">
-                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.InvitacionId" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-delete" onclick="return confirm('¿Eliminar esta invitación?');">Eliminar</button>
+                                </form>
                             </td>
                         </tr>
                     }
@@ -295,63 +291,4 @@
     </div>
 </div>
 
-<div class="modal fade" id="crearInvitadoModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0 rounded-4">
-
-            <div class="modal-header bg-dark text-white rounded-top-4">
-                <h5 class="modal-title">
-                    <i class="bi bi-person-plus-fill me-2"></i>
-                    Nueva Invitación
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body p-4">
-
-                <form asp-action="Create" method="post">
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            <i class="bi bi-envelope me-1 text-primary"></i>
-                            Correo del Invitado
-                        </label>
-                        <input name="CorreoInvitado" class="form-control rounded-3" placeholder="ejemplo@email.com" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            <i class="bi bi-calendar-event me-1 text-success"></i>
-                            Evento
-                        </label>
-                        <select name="EventoId" class="form-select rounded-3" asp-items="ViewBag.EventoId"></select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            <i class="bi bi-activity me-1 text-warning"></i>
-                            Estado
-                        </label>
-                        <select name="Estado" class="form-select rounded-3">
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="Confirmado">Confirmado</option>
-                            <option value="Rechazado">Rechazado</option>
-                        </select>
-                    </div>
-
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save me-1"></i>
-                            Guardar Invitación
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Removed inline modal to navigate to a dedicated Create page -->

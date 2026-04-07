@@ -45,3 +45,26 @@
         </div>
     </div>
 </div>
+
+<div class="events-section mt-4" style="clear:both;">
+    @if (Model?.Eventos != null && Model.Eventos.Any())
+    {
+        <h3>Eventos</h3>
+        <div class="row">
+            @foreach (var ev in Model.Eventos)
+            {
+                <div class="col-md-6 mb-3">
+                    @Html.Partial("~/Views/Eventoes/_EventoCardPartial.cshtml", ev)
+                </div>
+            }
+        </div>
+    }
+    else if (User.IsInRole("Participante"))
+    {
+        <h3>Mis eventos</h3>
+        <div class="text-center mt-3">
+            <h5>No estás invitado a ningún evento</h5>
+            <p class="text-muted">Pide a un organizador que te envíe una invitación.</p>
+        </div>
+    }
+</div>

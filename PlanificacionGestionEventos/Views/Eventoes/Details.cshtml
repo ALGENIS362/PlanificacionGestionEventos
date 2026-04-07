@@ -1,5 +1,6 @@
 ﻿@model PlanificacionGestionEventos.Models.Evento
 
+@using System.Security.Claims
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -46,7 +47,20 @@
     </div>
 
     <div class="mt-3">
-        <a asp-action="Edit" asp-route-id="@Model?.EventoId" class="btn btn-primary">Editar</a>
-        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+        @{ 
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int.TryParse(userIdClaim, out var currentUserId);
+            var isOrganizer = (User.IsInRole("Organizador") && Model.OrganizadorId == currentUserId) || User.IsInRole("Admin");
+        }
+
+        @if (isOrganizer)
+        {
+            <a asp-action="Edit" asp-route-id="@Model?.EventoId" class="btn btn-primary">Editar</a>
+            <a asp-action="Index" class="btn btn-secondary">Volver</a>
+        }
+        else
+        {
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary">Volver al Dashboard</a>
+        }
     </div>
 </div>

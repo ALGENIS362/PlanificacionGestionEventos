@@ -21,16 +21,20 @@ namespace PlanificacionGestionEventos.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult Login(string? returnUrl = null)
+        public IActionResult Login(string? returnUrl = null, string? returnToken = null, string? email = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
-            return View(new LoginViewModel());
+            ViewData["ReturnToken"] = returnToken;
+            ViewData["Email"] = email;
+            var vm = new LoginViewModel();
+            if (!string.IsNullOrEmpty(email)) vm.Email = email;
+            return View(vm);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null, string? returnToken = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             if (!ModelState.IsValid)
@@ -80,6 +84,11 @@ namespace PlanificacionGestionEventos.Controllers
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+            if (!string.IsNullOrEmpty(returnToken))
+            {
+                return RedirectToAction("Accept", "Invitacions", new { t = returnToken });
+            }
+
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
 
@@ -88,39 +97,57 @@ namespace PlanificacionGestionEventos.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult Register()
+        public IActionResult Register(string? returnToken = null)
         {
+            ViewData["ReturnToken"] = returnToken;
             return View(new RegisterViewModel());
         }
 
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        public async Task<IActionResult> Register(RegisterViewModel model, string? returnToken)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
             // check if email already exists
-            if (await _context.Usuarios.AnyAsync(u => u.Email == model.Email))
-            {
-                ModelState.AddModelError("Email", "El correo ya está registrado.");
-                return View(model);
-            }
-
+            var existing = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
             var hasher = new PasswordHasher<Usuario>();
 
-            var usuario = new Usuario
+            Usuario usuario;
+            if (existing != null)
             {
-                NombreCompleto = model.Name,
-                Email = model.Email,
-                Telefono = model.Telefono
-            };
+                // if existing has roles, treat as fully registered -> error
+                var hasRoles = await _context.UsuariosRoles.AnyAsync(ur => ur.UsuarioId == existing.UsuarioId);
+                if (hasRoles)
+                {
+                    ModelState.AddModelError("Email", "El correo ya está registrado.");
+                    return View(model);
+                }
 
-            usuario.PasswordHash = hasher.HashPassword(usuario, model.Password ?? "");
+                // existing is a placeholder -> update its details
+                existing.NombreCompleto = model.Name;
+                existing.Telefono = model.Telefono;
+                existing.PasswordHash = hasher.HashPassword(existing, model.Password ?? "");
+                usuario = existing;
+                _context.Update(existing);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                usuario = new Usuario
+                {
+                    NombreCompleto = model.Name,
+                    Email = model.Email,
+                    Telefono = model.Telefono
+                };
 
-            _context.Usuarios.Add(usuario);
-            await _context.SaveChangesAsync();
+                usuario.PasswordHash = hasher.HashPassword(usuario, model.Password ?? "");
+
+                _context.Usuarios.Add(usuario);
+                await _context.SaveChangesAsync();
+            }
 
             // Asignar rol seleccionado
             var roleName = model.Role ?? "Invitado";
@@ -148,6 +175,11 @@ namespace PlanificacionGestionEventos.Controllers
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            if (!string.IsNullOrEmpty(returnToken))
+            {
+                return RedirectToAction("Accept", "Invitacions", new { t = returnToken });
+            }
 
             return RedirectToAction("Index", "Home");
         }

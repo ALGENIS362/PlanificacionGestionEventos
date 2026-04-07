@@ -75,29 +75,45 @@
 
 </style>
 
-<div class="container-invitados">
-
-    <div class="header-create">
-        <div>
-            <h2 class="titulo">Nueva Invitación</h2>
-            <p class="subtitulo">Agrega un invitado a tu evento</p>
+<div class="container-invitados" style="display:flex;justify-content:center;align-items:center;min-height:60vh;">
+    <div class="card-form" style="width:600px;">
+        <div style="text-align:center;margin-bottom:12px;">
+            <h2 class="titulo">Agregar Invitado</h2>
+            <p class="subtitulo">Introduce el correo y selecciona el evento</p>
         </div>
-    </div>
 
-    <div class="card-form">
-
-        <form asp-action="Create">
+        <form asp-controller="Invitacions" asp-action="Create" method="post" id="invForm">
+            @Html.AntiForgeryToken()
 
             <div class="form-group">
                 <label>Correo del Invitado</label>
-                <select asp-for="UsuarioId" asp-items="ViewBag.Usuarios"></select>
+                <input asp-for="CorreoInvitado" class="form-control" placeholder="correo@ejemplo.com" />
+                <span asp-validation-for="CorreoInvitado" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label>Evento</label>
-                <select asp-for="EventoId" class="form-control" asp-items="ViewBag.EventoId">
-                    <option value="">-- Seleccione un evento --</option>
-                </select>
+                <label>Eventos</label>
+                <div id="eventList" style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow:auto;padding:6px;border:1px solid #e6e9ef;border-radius:6px;">
+                    @{
+                        var eventos = ViewBag.EventosDetailed as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+                        if (!eventos.Any())
+                        {
+                            <div class="text-warning">No hay eventos disponibles para este organizador.</div>
+                        }
+                        else
+                        {
+                            foreach (var ev in eventos)
+                            {
+                                <button type="button" class="btn btn-outline-primary text-start event-item" data-id="@ev.EventoId">
+                                    <div style="font-weight:600;">@ev.Nombre</div>
+                                    <div style="font-size:12px;color:#475569;">@(((DateTime)ev.Fecha).ToString("dd/MM/yyyy") + " " + (ev.Hora ?? "") + " — " + (ev.Lugar ?? ""))</div>
+                                </button>
+                            }
+                        }
+                    }
+                </div>
+                <input type="hidden" asp-for="EventoId" id="EventoId" />
+                <div class="mt-2"><small>Evento seleccionado: <span id="selEvent">ninguno</span></small></div>
             </div>
 
             <div class="form-group">
@@ -109,17 +125,52 @@
                 </select>
             </div>
 
-            <div class="botones">
-
-                <button type="submit" class="btn-guardar">
+            <div class="botones" style="justify-content:center;">
+                <button type="submit" class="btn-guardar" id="submitBtn">
                     <i class="bi bi-check-circle"></i> Guardar
                 </button>
-
-                <a asp-action="Index" class="btn-cancelar">
-                    Cancelar
-                </a>
-
+                <a asp-action="Index" class="btn-cancelar" style="margin-left:8px;">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function(){
+            var items = document.querySelectorAll('.event-item');
+            var hidden = document.getElementById('EventoId');
+            var sel = document.getElementById('selEvent');
+            var form = document.getElementById('invForm');
+
+            items.forEach(function(b){
+                b.addEventListener('click', function(){
+                    // remove active from others
+                    items.forEach(function(x){ x.classList.remove('active'); x.classList.remove('btn-primary'); x.classList.add('btn-outline-primary'); });
+                    b.classList.add('active');
+                    b.classList.remove('btn-outline-primary');
+                    b.classList.add('btn-primary');
+                    var id = b.getAttribute('data-id');
+                    hidden.value = id;
+                    sel.textContent = b.textContent.trim();
+                });
+            });
+
+            // prevent submit if no event selected or correo empty
+            form.addEventListener('submit', function(e){
+                var correo = document.querySelector('[name="CorreoInvitado"]').value.trim();
+                var eventoId = hidden.value;
+                if(!correo){
+                    e.preventDefault();
+                    alert('Ingrese el correo del invitado.');
+                    return;
+                }
+                if(!eventoId){
+                    e.preventDefault();
+                    alert('Seleccione un evento.');
+                    return;
+                }
+            });
+        })();
+    </script>
+}

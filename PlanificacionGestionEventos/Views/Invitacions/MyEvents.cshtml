@@ -1,0 +1,35 @@
+@model IEnumerable<PlanificacionGestionEventos.Models.Evento>
+
+@{
+    ViewData["Title"] = "Mis eventos";
+}
+
+<div class="container-invitados">
+    <h2>Mis eventos</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center mt-4">
+            <h5>No estás invitado a ningún evento</h5>
+            <p class="text-muted">Pide a un organizador que te envíe una invitación.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var ev in Model)
+            {
+                <div class="col-12">
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h5 class="card-title">@ev.Nombre</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@ev.Fecha.ToString("dd/MM/yyyy") @ev.Hora</h6>
+                            <p class="card-text">@ev.Lugar</p>
+                            <a asp-controller="Eventoes" asp-action="Details" asp-route-id="@ev.EventoId" class="card-link">Ver detalles</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

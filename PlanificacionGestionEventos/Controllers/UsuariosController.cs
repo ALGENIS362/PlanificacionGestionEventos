@@ -202,6 +202,15 @@ namespace PlanificacionGestionEventos.Controllers
             }
 
             await _context.SaveChangesAsync();
+            // Si la petición es AJAX, devolver JSON para que el cliente pueda actualizar la UI sin recargar
+            var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                         (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
+
+            if (isAjax)
+            {
+                return Json(new { success = true });
+            }
+
             return RedirectToAction(nameof(Index));
         }
     }

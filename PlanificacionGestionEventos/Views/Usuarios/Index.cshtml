@@ -41,13 +41,108 @@
                                 Editar
                             </a>
 
-                            <a asp-action="Delete" asp-route-id="@item.Usuario?.UsuarioId" class="btn btn-danger btn-sm">
+                            <button type="button" class="btn btn-danger btn-sm btn-delete" data-id="@item.Usuario?.UsuarioId" data-name="@(item.Usuario?.NombreCompleto ?? item.Usuario?.Email ?? "usuario")">
                                 Eliminar
-                            </a>
+                            </button>
                         </td>
                     </tr>
                 }
             }
         </tbody>
     </table>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar eliminación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmDeleteMessage">¿Estás seguro de que deseas eliminar este usuario?</p>
+      </div>
+      <div class="modal-footer">
+        <form asp-action="Delete" method="post" id="confirmDeleteForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="confirmDeleteId" value="" />
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var deleteButtons = document.querySelectorAll('.btn-delete');
+            var modalEl = document.getElementById('confirmDeleteModal');
+            var bsModal = null;
+            if (modalEl) {
+                bsModal = new bootstrap.Modal(modalEl);
+            }
+
+            var form = document.getElementById('confirmDeleteForm');
+            var idInput = document.getElementById('confirmDeleteId');
+            var messageEl = document.getElementById('confirmDeleteMessage');
+
+            deleteButtons.forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    var id = btn.getAttribute('data-id');
+                    var name = btn.getAttribute('data-name');
+                    if (messageEl) {
+                        messageEl.textContent = '¿Estás seguro de que deseas eliminar al usuario "' + name + '"?';
+                    }
+                    if (idInput) {
+                        idInput.value = id;
+                    }
+                    if (form) {
+                        form.setAttribute('data-trigger-id', id);
+                    }
+                    if (bsModal) bsModal.show();
+                });
+            });
+
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var id = idInput ? idInput.value : null;
+                    var tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+                    var token = tokenInput ? tokenInput.value : '';
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token,
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        body: new URLSearchParams({ id: id }).toString()
+                    }).then(function (resp) {
+                        if (!resp.ok) throw new Error('Network response was not ok');
+                        return resp.json();
+                    }).then(function (data) {
+                        if (data && data.success) {
+                            if (bsModal) bsModal.hide();
+                            var triggerBtn = document.querySelector('.btn-delete[data-id="' + id + '"]');
+                            if (triggerBtn) {
+                                var row = triggerBtn.closest('tr');
+                                if (row) row.remove();
+                            }
+                        } else {
+                            alert((data && data.message) ? data.message : 'Error al eliminar');
+                        }
+                    }).catch(function (err) {
+                        console.error(err);
+                        alert('Error al eliminar el usuario');
+                    });
+                });
+            }
+        })();
+    </script>
+}
 </div>

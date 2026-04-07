@@ -90,6 +90,11 @@
                         Mis Invitaciones
                     </a>
                 </li>
+                <li>
+                    <a asp-controller="Invitacions" asp-action="MyEvents">
+                        Mis Eventos
+                    </a>
+                </li>
             }
 
             <!-- 🧑‍💼 ORGANIZADOR -->
@@ -143,9 +148,65 @@
             @RenderBody()
         </main>
     </div>
+</div>
+
+    <!-- Gallery modal (used project-wide) -->
+    <div class="modal fade" id="galleryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Imágenes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner" id="galleryCarouselInner">
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", required: false)
 
+    <script>
+        (function(){
+            // Delegate clicks for gallery buttons
+            document.addEventListener('click', function(e){
+                var btn = e.target.closest('.view-gallery-btn');
+                if (!btn) return;
+                var card = btn.closest('.card-evento');
+                if (!card) return;
+                var images = card.getAttribute('data-images') || '';
+                var arr = images.split(';').map(function(s){ return s.trim(); }).filter(function(s){ return s.length>0; });
+
+                var inner = document.getElementById('galleryCarouselInner');
+                inner.innerHTML = '';
+                if (arr.length === 0) {
+                    inner.innerHTML = '<div class="p-3">No hay imágenes.</div>';
+                } else {
+                    arr.forEach(function(img, idx){
+                        var div = document.createElement('div');
+                        div.className = 'carousel-item' + (idx===0? ' active':'');
+                        div.innerHTML = '<img src="/uploads/'+encodeURI(img)+'" class="d-block w-100" style="max-height:600px; object-fit:contain;" />';
+                        inner.appendChild(div);
+                    });
+                }
+
+                var galleryModal = new bootstrap.Modal(document.getElementById('galleryModal'));
+                galleryModal.show();
+            });
+        })();
+    </script>
 </body>
 </html>
