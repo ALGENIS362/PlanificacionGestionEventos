@@ -1,8 +1,66 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    Layout = null;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">yyyyybuilding Web apps with ASP.NET Core</a>.</p>
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<style>
+    .hero {
+        height: 80vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #2563eb, #1e3a8a);
+        color: white;
+        text-align: center;
+        flex-direction: column;
+    }
+
+        .hero h1 {
+            font-size: 50px;
+            font-weight: bold;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-top: 10px;
+            color: #e2e8f0;
+        }
+
+    .btn-custom {
+        margin-top: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn-login {
+        background: white;
+        color: #1e3a8a;
+    }
+
+    .btn-register {
+        background: #22c55e;
+        color: white;
+        margin-left: 10px;
+    }
+</style>
+
+<div class="hero">
+    <h1>Bienvenido a Eventos App</h1>
+    <p>Organiza y gestiona tus eventos fácilmente</p>
+
+    <div>
+        <a asp-controller="Account" asp-action="Login" class="btn-custom btn-login">
+            Iniciar Sesión
+        </a>
+
+        <a asp-controller="Account" asp-action="Register" class="btn-custom btn-register">
+            Registrarse
+        </a>
+    </div>
 </div>

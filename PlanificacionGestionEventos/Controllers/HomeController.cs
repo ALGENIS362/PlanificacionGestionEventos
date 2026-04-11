@@ -1,6 +1,7 @@
-using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PlanificacionGestionEventos.Models;
+using System.Diagnostics;
 
 namespace PlanificacionGestionEventos.Controllers
 {
@@ -13,9 +14,9 @@ namespace PlanificacionGestionEventos.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         public IActionResult Index()
         {
-            ViewData["Title"] = "Dashboard"; // Aquí le dices al layout que esta sección está activa
             return View();
         }
 

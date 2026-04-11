@@ -91,6 +91,10 @@ namespace PlanificacionGestionEventos.Controllers
                     .Select(i => i.Evento!)
                     .Include(e => e.Organizador);
             }
+            else
+            {
+                query = _context.Eventos.Where(e => false);
+            }
 
             query = query.OrderByDescending(e => e.Fecha);
 
