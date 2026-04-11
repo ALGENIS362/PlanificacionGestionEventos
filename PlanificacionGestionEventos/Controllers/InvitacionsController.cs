@@ -289,30 +289,37 @@ namespace PlanificacionGestionEventos.Controllers
 
                     var bodyBuilder = new BodyBuilder();
 
-                    var primeraImagen = !string.IsNullOrEmpty(evento.Images)
-     ? evento.Images.Split(';').FirstOrDefault()
-     : null;
+                    if (!string.IsNullOrEmpty(evento.Images))
+                    {
+                        var firstImage = evento.Images.Split(';')[0];
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", firstImage);
 
-                    bodyBuilder.HtmlBody =
-                        $"<h2>📅 Invitación a Evento</h2>" +
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            var image = bodyBuilder.LinkedResources.Add(filePath);
+                            image.ContentId = MimeKit.Utils.MimeUtils.GenerateMessageId();
 
-                        (!string.IsNullOrEmpty(primeraImagen)
-                            ? $"<img src='https://localhost:5001/uploads/{primeraImagen}' style='width:100%;max-width:600px;border-radius:10px;margin-bottom:15px;' />"
-                            : "") +
+                            bodyBuilder.HtmlBody =
+                                $"<h2>📅 Invitación a Evento</h2>" +
 
-                        $"<p>Has sido invitado al evento '<strong>{evento.Nombre}</strong>' por {organizador?.NombreCompleto ?? "el organizador"}.</p>" +
-                        $"<hr/>" +
+                                $"<img src='cid:{image.ContentId}' style='width:100%;max-width:600px;border-radius:10px;margin-bottom:15px;' />" +
 
-                        $"<p><strong>📌 Nombre:</strong> {evento.Nombre}</p>" +
-                        $"<p><strong>📅 Fecha:</strong> {evento.Fecha:d}</p>" +
-                        $"<p><strong>⏰ Hora:</strong> {evento.Hora}</p>" +
-                        $"<p><strong>📍 Lugar:</strong> {evento.Lugar}</p>" +
-                        $"<p><strong>📝 Descripción:</strong> {evento.Descripcion}</p>" +
-                        $"<p><strong>📂 Categoría:</strong> {evento.Categoria}</p>" +
-                        $"<p><strong>👥 Máx Invitados:</strong> {evento.MaximoInvitados}</p>" +
+                                $"<p>Has sido invitado al evento '<strong>{evento.Nombre}</strong>' por {organizador?.NombreCompleto ?? "el organizador"}.</p>" +
 
-                        $"<br/>" +
-                        $"<a href='{acceptUrl}' style='padding:10px 15px; background:#22c55e; color:white; text-decoration:none; border-radius:5px;'>Aceptar Invitación</a>";
+                                $"<hr/>" +
+
+                                $"<p><strong>📌 Nombre:</strong> {evento.Nombre}</p>" +
+                                $"<p><strong>📅 Fecha:</strong> {evento.Fecha:d}</p>" +
+                                $"<p><strong>⏰ Hora:</strong> {evento.Hora}</p>" +
+                                $"<p><strong>📍 Lugar:</strong> {evento.Lugar}</p>" +
+                                $"<p><strong>📝 Descripción:</strong> {evento.Descripcion}</p>" +
+                                $"<p><strong>📂 Categoría:</strong> {evento.Categoria}</p>" +
+                                $"<p><strong>👥 Máx Invitados:</strong> {evento.MaximoInvitados}</p>" +
+
+                                $"<br/>" +
+                                $"<a href='{acceptUrl}' style='padding:10px 15px; background:#22c55e; color:white; text-decoration:none; border-radius:5px;'>Aceptar Invitación</a>";
+                        }
+                    }
 
                     mime.Body = bodyBuilder.ToMessageBody();
 
