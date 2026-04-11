@@ -288,10 +288,32 @@ namespace PlanificacionGestionEventos.Controllers
                     mime.Subject = $"Invitación al evento: {evento.Nombre}";
 
                     var bodyBuilder = new BodyBuilder();
-                    bodyBuilder.HtmlBody = $"<p>Has sido invitado al evento '<strong>{evento.Nombre}</strong>' por {organizador?.NombreCompleto ?? "el organizador"}.</p>" +
-                                            $"<p>Fecha: {evento.Fecha:d} {evento.Hora}</p>" +
-                                            $"<p>Lugar: {evento.Lugar}</p>" +
-                                            $"<p><a href=\"{acceptUrl}\">Aceptar invitación</a></p>";
+
+                    var primeraImagen = !string.IsNullOrEmpty(evento.Images)
+     ? evento.Images.Split(';').FirstOrDefault()
+     : null;
+
+                    bodyBuilder.HtmlBody =
+                        $"<h2>📅 Invitación a Evento</h2>" +
+
+                        (!string.IsNullOrEmpty(primeraImagen)
+                            ? $"<img src='https://localhost:5001/uploads/{primeraImagen}' style='width:100%;max-width:600px;border-radius:10px;margin-bottom:15px;' />"
+                            : "") +
+
+                        $"<p>Has sido invitado al evento '<strong>{evento.Nombre}</strong>' por {organizador?.NombreCompleto ?? "el organizador"}.</p>" +
+                        $"<hr/>" +
+
+                        $"<p><strong>📌 Nombre:</strong> {evento.Nombre}</p>" +
+                        $"<p><strong>📅 Fecha:</strong> {evento.Fecha:d}</p>" +
+                        $"<p><strong>⏰ Hora:</strong> {evento.Hora}</p>" +
+                        $"<p><strong>📍 Lugar:</strong> {evento.Lugar}</p>" +
+                        $"<p><strong>📝 Descripción:</strong> {evento.Descripcion}</p>" +
+                        $"<p><strong>📂 Categoría:</strong> {evento.Categoria}</p>" +
+                        $"<p><strong>👥 Máx Invitados:</strong> {evento.MaximoInvitados}</p>" +
+
+                        $"<br/>" +
+                        $"<a href='{acceptUrl}' style='padding:10px 15px; background:#22c55e; color:white; text-decoration:none; border-radius:5px;'>Aceptar Invitación</a>";
+
                     mime.Body = bodyBuilder.ToMessageBody();
 
                     // Registrar destinatario para depuración
