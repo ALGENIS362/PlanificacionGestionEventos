@@ -288,28 +288,17 @@ namespace PlanificacionGestionEventos.Controllers
                     u.Email.ToLower().Trim() == correo
                 );
 
-            // Si el usuario no existe, crear un usuario temporal (invitado) para poder vincular la invitación
-            if (usuario == null)
+            // ✅ SOLO ASIGNAR SI EXISTE
+            if (usuario != null)
             {
-                var hasher = new PasswordHasher<Usuario>();
-                var nuevo = new Usuario
-                {
-                    Email = correo,
-                    NombreCompleto = correo,
-                    Telefono = null
-                };
-                // Generar password aleatorio hasheado para cumplir la restricción de PasswordHash no nulo
-                nuevo.PasswordHash = hasher.HashPassword(nuevo, System.Guid.NewGuid().ToString());
-
-                _context.Usuarios.Add(nuevo);
-                await _context.SaveChangesAsync();
-
-                usuario = nuevo;
+                invitacion.UsuarioId = usuario.UsuarioId;
+            }
+            else
+            {
+                invitacion.UsuarioId = null; // 🔥 IMPORTANTE
             }
 
-            // ✅ ASIGNAR USUARIO (existente o recién creado)
-            invitacion.UsuarioId = usuario.UsuarioId;
-
+            // ✅ ESTADO
             invitacion.Estado = EstadoRSVP.Pendiente;
 
             // ✅ GUARDAR
