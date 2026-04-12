@@ -310,6 +310,8 @@ namespace PlanificacionGestionEventos.Controllers
             // ✅ ASIGNAR USUARIO (existente o recién creado)
             invitacion.UsuarioId = usuario.UsuarioId;
 
+            invitacion.Estado = EstadoRSVP.Pendiente;
+
             // ✅ GUARDAR
             _context.Invitaciones.Add(invitacion);
             await _context.SaveChangesAsync();
