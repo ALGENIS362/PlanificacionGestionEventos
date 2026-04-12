@@ -26,7 +26,6 @@ namespace PlanificacionGestionEventos.Controllers
             _config = config;
         }
 
-        // GET: Invitacions/Accept?t=token
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Accept(string t)
@@ -36,6 +35,7 @@ namespace PlanificacionGestionEventos.Controllers
 
             string protectedBase64 = System.Net.WebUtility.UrlDecode(t);
             string json;
+
             try
             {
                 var protectedBytes = Convert.FromBase64String(protectedBase64);
@@ -52,42 +52,75 @@ namespace PlanificacionGestionEventos.Controllers
             var correo = doc.RootElement.GetProperty("Correo").GetString();
 
             var invitacion = await _context.Invitaciones.FindAsync(invitacionId);
+
             if (invitacion == null)
                 return NotFound();
 
-            // Si usuario autenticado, asociar invitación a su cuenta
+            // 🔒 evitar doble acción
+            if (invitacion.Estado == EstadoRSVP.Confirmado)
+                return View("Aceptado");
+
+            if (invitacion.Estado == EstadoRSVP.Rechazado)
+                return View("Rechazado");
+
+            // ✅ SI ESTÁ LOGUEADO
             if (User?.Identity?.IsAuthenticated ?? false)
             {
                 var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
                 if (!int.TryParse(userIdClaim, out int currentUserId))
                     return Unauthorized();
 
-                // Si la invitación está vinculada a otro usuario, actualizar
-                if (invitacion.UsuarioId != currentUserId)
-                {
-                    invitacion.UsuarioId = currentUserId;
-                }
+                invitacion.UsuarioId = currentUserId;
 
-                // Marcar como confirmado
+                // 🔥 CORRECTO
                 invitacion.Estado = EstadoRSVP.Confirmado;
+
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("Index", "Invitacions");
+                return View("Aceptado");
             }
 
-            // No autenticado: decidir si redirigir a login (usuario registrado) o a registro
-            var posibleUsuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower().Trim() == correo);
-            if (posibleUsuario != null)
+            return RedirectToAction("Login", "Account", new { returnToken = t, email = correo });
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> Reject(string t)
+        {
+            if (string.IsNullOrEmpty(t))
+                return BadRequest();
+
+            try
             {
-                // considerar registrado solo si tiene roles asignados (usuario real)
-                var tieneRoles = await _context.UsuariosRoles.AnyAsync(ur => ur.UsuarioId == posibleUsuario.UsuarioId);
-                if (tieneRoles)
-                {
-                    return RedirectToAction("Login", "Account", new { returnToken = t, email = correo });
-                }
-            }
+                var protectedBytes = Convert.FromBase64String(System.Net.WebUtility.UrlDecode(t));
+                var bytes = _protector.Unprotect(protectedBytes);
+                var json = Encoding.UTF8.GetString(bytes);
 
-            return RedirectToAction("Register", "Account", new { returnToken = t });
+                var doc = System.Text.Json.JsonDocument.Parse(json);
+                int invitacionId = doc.RootElement.GetProperty("InvitacionId").GetInt32();
+
+                var invitacion = await _context.Invitaciones.FindAsync(invitacionId);
+
+                if (invitacion == null)
+                    return NotFound();
+
+                if (invitacion.Estado == EstadoRSVP.Confirmado)
+                    return Content("Ya fue aceptada");
+
+                if (invitacion.Estado == EstadoRSVP.Rechazado)
+                    return Content("Ya fue rechazada");
+
+                invitacion.Estado = EstadoRSVP.Rechazado;
+
+                await _context.SaveChangesAsync();
+
+                return View("Rechazado");
+            }
+            catch
+            {
+                return BadRequest();
+            }
         }
 
         // LISTAR INVITACIONES
@@ -287,7 +320,7 @@ namespace PlanificacionGestionEventos.Controllers
             var protectedPayload = Convert.ToBase64String(protectedBytes);
             var token = System.Net.WebUtility.UrlEncode(protectedPayload);
             var acceptUrl = Url.Action("Accept", "Invitacions", new { t = token }, Request.Scheme);
-
+            var rejectUrl = Url.Action("Reject", "Invitacions", new { t = token }, Request.Scheme);
             // Enviar correo (si está configurado) o loguear
             try
             {
@@ -353,8 +386,10 @@ namespace PlanificacionGestionEventos.Controllers
                                 $"<p><strong>📂 Categoría:</strong> {evento.Categoria}</p>" +
                                 $"<p><strong>👥 Máx Invitados:</strong> {evento.MaximoInvitados}</p>" +
 
-                                $"<br/>" +
-                                $"<a href='{acceptUrl}' style='padding:10px 15px; background:#22c55e; color:white; text-decoration:none; border-radius:5px;'>Aceptar Invitación</a>";
+                                $"<br/><br/>" +
+                        // 🔥 BOTONES
+                            $"<a href='{acceptUrl}' style='padding:12px 20px; background:#22c55e; color:white; text-decoration:none; border-radius:6px; margin-right:10px; display:inline-block;'>✅ Aceptar</a>" +
+                            $"<a href='{rejectUrl}' style='padding:12px 20px; background:#ef4444; color:white; text-decoration:none; border-radius:6px; display:inline-block;'>❌ Rechazar</a>";
                         }
                     }
 
