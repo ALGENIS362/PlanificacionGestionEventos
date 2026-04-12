@@ -126,6 +126,43 @@ namespace PlanificacionGestionEventos.Controllers
             return View("MyEvents", eventos);
         }
 
+        // GET: Invitacions/Invitados?eventoId=1&q=correo
+        [HttpGet]
+        public async Task<IActionResult> Invitados(int eventoId, string? q)
+        {
+            // verificar que el evento existe
+            var evento = await _context.Eventos.FindAsync(eventoId);
+            if (evento == null) return NotFound();
+
+            // solo el organizador del evento o admin puede consultar la lista completa
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            int.TryParse(userIdClaim, out var currentUserId);
+            var isOrganizer = (User.IsInRole("Organizador") && evento.OrganizadorId == currentUserId) || User.IsInRole("Admin");
+
+            if (!isOrganizer)
+                return Forbid();
+
+            var query = _context.Invitaciones
+                .Where(i => i.EventoId == eventoId)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(q))
+            {
+                var qLower = q.Trim().ToLower();
+                query = query.Where(i => i.CorreoInvitado != null && i.CorreoInvitado.ToLower().Contains(qLower));
+            }
+
+            var invitados = await query
+                .Select(i => new {
+                    i.InvitacionId,
+                    i.CorreoInvitado,
+                    Estado = i.Estado.ToString()
+                })
+                .ToListAsync();
+
+            return Json(new { Evento = new { evento.EventoId, evento.Nombre }, Invitados = invitados });
+        }
+
         //GET FORMULARIO CREAR
         public IActionResult Create()
         {

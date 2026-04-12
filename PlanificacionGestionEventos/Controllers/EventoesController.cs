@@ -153,7 +153,7 @@ namespace PlanificacionGestionEventos.Controllers
         // POST: Eventoes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EventoId,Nombre,Fecha,Hora,Lugar,Descripcion,Categoria,MaximoInvitados,OrganizadorId,Estado")] Evento evento)
+        public async Task<IActionResult> Create([Bind("EventoId,Nombre,Fecha,Hora,FechaInicio,FechaFin,Lugar,Descripcion,Categoria,MaximoInvitados,OrganizadorId,Estado")] Evento evento)
         {
             var isAjax = string.Equals(
                 Request.Headers["X-Requested-With"],
@@ -182,6 +182,58 @@ namespace PlanificacionGestionEventos.Controllers
                     ViewData["OrganizadorId"] = new SelectList(_context.Usuarios, "UsuarioId", "Email", evento.OrganizadorId);
                     ViewData["Estados"] = Enum.GetNames(typeof(Models.EventoEstado)).ToList();
 
+                    if (User.IsInRole("Organizador"))
+                    {
+                        ViewBag.CurrentOrganizadorId = evento.OrganizadorId;
+                    }
+
+                    if (isAjax)
+                        return PartialView("_CreatePartial", evento);
+
+                    return View(evento);
+                }
+
+                // Validaciones: fechas
+                if (evento.FechaInicio.Date < DateTime.Today)
+                {
+                    ModelState.AddModelError("FechaInicio", "La fecha debe ser hoy en adelante.");
+                }
+
+                if (evento.FechaFin <= evento.FechaInicio)
+                {
+                    ModelState.AddModelError("FechaFin", "La fecha/hora de fin debe ser posterior a la fecha/hora de inicio.");
+                }
+
+                // Comprobar solapamiento por lugar
+                var overlapping = await _context.Eventos
+                    .Where(e => e.Lugar == evento.Lugar &&
+                                e.FechaInicio < evento.FechaFin &&
+                                e.FechaFin > evento.FechaInicio)
+                    .AnyAsync();
+
+                if (overlapping)
+                {
+                    ModelState.AddModelError("Lugar", "Ya existe un evento en ese lugar y horario que se solapa.");
+                }
+
+                // Comprobar coincidencia exacta de lugar y hora (mismo lugar y mismo intervalo)
+                var lugarNormalized = (evento.Lugar ?? string.Empty).Trim().ToLower();
+                var exactMatch = await _context.Eventos
+                    .Where(e => e.EventoId != evento.EventoId)
+                    .Where(e => (e.Lugar ?? string.Empty).ToLower().Trim() == lugarNormalized)
+                    .Where(e => e.FechaInicio == evento.FechaInicio && e.FechaFin == evento.FechaFin)
+                    .AnyAsync();
+
+                if (exactMatch)
+                {
+                    ModelState.AddModelError("Lugar", "Ya existe un evento exactamente en ese lugar y horario.");
+                }
+
+                // Si hay errores de validación, devolver la vista (o partial si es AJAX)
+                if (!ModelState.IsValid)
+                {
+                    ViewData["OrganizadorId"] = new SelectList(_context.Usuarios, "UsuarioId", "Email", evento.OrganizadorId);
+                    ViewData["Estados"] = Enum.GetNames(typeof(Models.EventoEstado)).ToList();
                     if (User.IsInRole("Organizador"))
                     {
                         ViewBag.CurrentOrganizadorId = evento.OrganizadorId;
@@ -225,6 +277,10 @@ namespace PlanificacionGestionEventos.Controllers
                         evento.Images = string.Join(';', saved);
                     }
                 }
+
+                // Mantener compatibilidad: rellenar Fecha y Hora con FechaInicio
+                evento.Fecha = evento.FechaInicio.Date;
+                evento.Hora = evento.FechaInicio.ToString("HH:mm");
 
                 _context.Add(evento);
                 await _context.SaveChangesAsync();
@@ -316,10 +372,53 @@ namespace PlanificacionGestionEventos.Controllers
             if (!(User.IsInRole("Organizador") && eventoDb.OrganizadorId == userId))
                 return Unauthorized();
 
+            // Validaciones de fechas
+            if (evento.FechaInicio.Date < DateTime.Today)
+            {
+                ModelState.AddModelError("FechaInicio", "La fecha debe ser hoy en adelante.");
+            }
+
+            if (evento.FechaFin <= evento.FechaInicio)
+            {
+                ModelState.AddModelError("FechaFin", "La fecha/hora de fin debe ser posterior a la fecha/hora de inicio.");
+            }
+
+            // Comprobar solapamiento por lugar (excluyendo el propio evento)
+            var overlapping = await _context.Eventos
+                .Where(e => e.EventoId != id && e.Lugar == evento.Lugar &&
+                            e.FechaInicio < evento.FechaFin &&
+                            e.FechaFin > evento.FechaInicio)
+                .AnyAsync();
+
+            if (overlapping)
+            {
+                ModelState.AddModelError("Lugar", "Ya existe un evento en ese lugar y horario que se solapa.");
+            }
+
+            // Comprobar coincidencia exacta de lugar y hora (mismo lugar y mismo intervalo)
+            var lugarNormalized = (evento.Lugar ?? string.Empty).Trim().ToLower();
+            var exactMatch = await _context.Eventos
+                .Where(e => e.EventoId != id)
+                .Where(e => (e.Lugar ?? string.Empty).ToLower().Trim() == lugarNormalized)
+                .Where(e => e.FechaInicio == evento.FechaInicio && e.FechaFin == evento.FechaFin)
+                .AnyAsync();
+
+            if (exactMatch)
+            {
+                ModelState.AddModelError("Lugar", "Ya existe un evento exactamente en ese lugar y horario.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             // ✏ ACTUALIZAR CAMPOS (NO usar _context.Update)
             eventoDb.Nombre = evento.Nombre;
-            eventoDb.Fecha = evento.Fecha;
-            eventoDb.Hora = evento.Hora;
+            eventoDb.Fecha = evento.FechaInicio.Date;
+            eventoDb.Hora = evento.FechaInicio.ToString("HH:mm");
+            eventoDb.FechaInicio = evento.FechaInicio;
+            eventoDb.FechaFin = evento.FechaFin;
             eventoDb.Lugar = evento.Lugar;
             eventoDb.Descripcion = evento.Descripcion;
             eventoDb.Categoria = evento.Categoria;

@@ -148,7 +148,6 @@
             @RenderBody()
         </main>
     </div>
-</div>
 
     <!-- Gallery modal (used project-wide) -->
     <div class="modal fade" id="galleryModal" tabindex="-1">
@@ -174,8 +173,41 @@
                 </div>
             </div>
         </div>
-    </div>
 
+    <!-- Invitados modal (lista de invitados por evento) -->
+    <div class="modal fade" id="invitadosModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Invitados</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="invitadosContainer">
+                        <h6 id="invitadosEventoName"></h6>
+                        <div class="mb-2">
+                            <input id="invitadosSearch" class="form-control form-control-sm" placeholder="Buscar por correo" />
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Correo</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invitadosTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", required: false)
 
@@ -205,6 +237,119 @@
 
                 var galleryModal = new bootstrap.Modal(document.getElementById('galleryModal'));
                 galleryModal.show();
+            });
+            // Delegate clicks for invitados button
+            var currentEventIdForInvitados = null;
+            var searchTimeout = null;
+            document.addEventListener('click', function(e){
+                var btn = e.target.closest('.invitados-btn');
+                console.log('invitados-btn click', btn);
+                if (!btn) return;
+                var eventId = btn.getAttribute('data-eventid');
+                console.log('invitados-btn eventId', eventId);
+                if (!eventId) return;
+
+                var titulo = document.getElementById('invitadosEventoName');
+                var tbody = document.getElementById('invitadosTableBody');
+                var modalEl = document.getElementById('invitadosModal');
+                // reset and show loading modal immediately to avoid backdrop-only state
+                try {
+                    if (!modalEl) {
+                        console.error('invitadosModal element not found');
+                        alert('Error interno: modal no disponible');
+                        return;
+                    }
+                    // Ensure modal is a direct child of body (fix stacking/visibility issues)
+                    if (modalEl.parentElement !== document.body) {
+                        document.body.appendChild(modalEl);
+                        console.log('Moved invitadosModal to document.body');
+                    }
+                    titulo.textContent = 'Cargando...';
+                    tbody.innerHTML = '<tr><td colspan="2" class="text-center py-3">Cargando...</td></tr>';
+                    // Ensure modal is visible by setting z-index high if necessary
+                    modalEl.style.zIndex = modalEl.style.zIndex || 1060;
+                    var modalInst = new bootstrap.Modal(modalEl);
+                    console.log('Showing invitadosModal');
+                    modalInst.show();
+                } catch (ex) {
+                    console.error('Error showing invitados modal', ex);
+                    alert('Error mostrando modal de invitados');
+                }
+
+                currentEventIdForInvitados = eventId;
+                fetch('/Invitacions/Invitados?eventoId=' + encodeURIComponent(eventId), { credentials: 'same-origin' })
+                    .then(function(r){
+                        console.log('Invitados fetch status:', r.status, r.statusText, r.headers.get('content-type'));
+                        if (!r.ok) throw new Error('Error fetching invitados: ' + r.status);
+                        return r.text().then(function(text){
+                            try {
+                                var json = JSON.parse(text);
+                                console.log('Invitados response json:', json);
+                                return json;
+                            } catch(e) {
+                                console.log('Invitados response text:', text);
+                                throw new Error('Invalid JSON in invitados response');
+                            }
+                        });
+                    })
+                    .then(function(data){
+                        // JSON is serialized with camelCase by default, support both shapes
+                        var eventoObj = data.Evento || data.evento || {};
+                        var invitadosArr = data.Invitados || data.invitados || [];
+                        var eventoNombre = eventoObj.Nombre || eventoObj.nombre || '';
+                        titulo.textContent = eventoNombre;
+                        tbody.innerHTML = '';
+                        if (invitadosArr && invitadosArr.length) {
+                            invitadosArr.forEach(function(inv){
+                                var tr = document.createElement('tr');
+                                var correo = inv.CorreoInvitado || inv.correoInvitado || inv.Correo || inv.email || '';
+                                var estado = inv.Estado || inv.estado || '';
+                                var tdEmail = document.createElement('td'); tdEmail.textContent = correo;
+                                var tdEstado = document.createElement('td'); tdEstado.textContent = estado;
+                                tr.appendChild(tdEmail); tr.appendChild(tdEstado);
+                                tbody.appendChild(tr);
+                            });
+                        } else {
+                            tbody.innerHTML = '<tr><td colspan="2" class="text-center">No hay invitados</td></tr>';
+                        }
+                    })
+                    .catch(function(err){
+                        console.error('Fetch invitados error', err);
+                        // show error inside modal instead of alert
+                        try {
+                            titulo.textContent = 'Error';
+                            tbody.innerHTML = '<tr><td colspan="2" class="text-danger text-center">No se pudieron cargar los invitados.</td></tr>';
+                        } catch(e){ console.error(e); }
+                    });
+                // wire up search input
+                var searchInput = document.getElementById('invitadosSearch');
+                if (searchInput) {
+                    searchInput.value = '';
+                    searchInput.oninput = function(ev) {
+                        if (searchTimeout) clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(function() {
+                            var q = searchInput.value || '';
+                            fetch('/Invitacions/Invitados?eventoId=' + encodeURIComponent(currentEventIdForInvitados) + '&q=' + encodeURIComponent(q), { credentials: 'same-origin' })
+                                .then(function(r){ if (!r.ok) throw new Error('Error fetching invitados: ' + r.status); return r.json(); })
+                                .then(function(data){
+                                    titulo.textContent = data.Evento ? (data.Evento.Nombre || '') : '';
+                                    tbody.innerHTML = '';
+                                    if (data.Invitados && data.Invitados.length) {
+                                        data.Invitados.forEach(function(inv){
+                                            var tr = document.createElement('tr');
+                                            var tdEmail = document.createElement('td'); tdEmail.textContent = inv.CorreoInvitado;
+                                            var tdEstado = document.createElement('td'); tdEstado.textContent = inv.Estado;
+                                            tr.appendChild(tdEmail); tr.appendChild(tdEstado);
+                                            tbody.appendChild(tr);
+                                        });
+                                    } else {
+                                        tbody.innerHTML = '<tr><td colspan="2" class="text-center">No hay invitados</td></tr>';
+                                    }
+                                })
+                                .catch(function(err){ console.error(err); });
+                        }, 350);
+                    };
+                }
             });
         })();
     </script>

@@ -12,10 +12,17 @@ namespace PlanificacionGestionEventos.Models
         public string? Nombre { get; set; }
 
         [Required]
+        // Legacy single date/time kept for compatibility; prefer FechaInicio/FechaFin
         public DateTime Fecha { get; set; }
 
-        [Required]
         public string? Hora { get; set; }
+
+        // New: start and end datetimes for the event
+        [Required]
+        public DateTime FechaInicio { get; set; }
+
+        [Required]
+        public DateTime FechaFin { get; set; }
 
         [Required]
         [MaxLength(150)]

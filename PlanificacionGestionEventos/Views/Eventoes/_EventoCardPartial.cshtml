@@ -67,7 +67,7 @@
             @* Mostrar botón 'Invitados' sólo al organizador o admin *@
             @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("Organizador") && Model.OrganizadorId == currentUserId || User.IsInRole("Admin")))
             {
-                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#invitadosModal" data-eventid="@Model.EventoId">Invitados</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm invitados-btn" data-eventid="@Model.EventoId">Invitados</button>
             }
             @if (User?.Identity?.IsAuthenticated == true
                         && User.IsInRole("Organizador")

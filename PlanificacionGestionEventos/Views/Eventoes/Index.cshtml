@@ -182,41 +182,7 @@
     }
 </div>
 
-<div class="modal fade" id="invitadosModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Buscar Invitados por Email</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <input id="buscarEmail" class="form-control" placeholder="Escribe el correo del invitado" />
-                </div>
-                <div id="resultadosInvitados">
-                    <p class="text-muted">Escribe un email para buscar usuarios con rol "Invitado"</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="galleryModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Galería</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="galleryModalBody">
-                <p class="text-muted">Cargando imágenes...</p>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Modals moved to shared layout to avoid duplicates -->
 
 <div class="modal fade" id="crearEventoModal" tabindex="-1">
     <div class="modal-dialog">
@@ -488,80 +454,5 @@
         }
     });
 
-    var invitadosModal = document.getElementById('invitadosModal');
-    var currentEventoId = null;
-    invitadosModal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget;
-        currentEventoId = button.getAttribute('data-eventid');
-        document.getElementById('buscarEmail').value = '';
-        document.getElementById('resultadosInvitados').innerHTML = '<p class="text-muted">Escribe un email para buscar usuarios con rol "Invitado"</p>';
-    });
-
-    var timeout = null;
-    document.getElementById('buscarEmail').addEventListener('input', function (e) {
-        var email = e.target.value;
-        if (timeout) clearTimeout(timeout);
-        timeout = setTimeout(function () {
-            if (!email || email.length < 3) {
-                document.getElementById('resultadosInvitados').innerHTML = '<p class="text-muted">Escribe al menos 3 caracteres para buscar</p>';
-                return;
-            }
-            fetch('/Invitacions/SearchInvitados?email=' + encodeURIComponent(email) + '&eventoId=' + currentEventoId)
-                .then(r => r.json())
-                .then(data => {
-                    if (!data || data.length === 0) {
-                        document.getElementById('resultadosInvitados').innerHTML = '<p class="text-muted">No se encontraron invitados con ese email.</p>';
-                        return;
-                    }
-                    var html = '<div class="list-group">';
-                    data.forEach(function (u) {
-                        html += '<div class="list-group-item">';
-                        html += '<div class="d-flex w-100 justify-content-between">';
-                        html += '<h5 class="mb-1">' + (u.NombreCompleto || u.Email) + '</h5>';
-                        html += '<small>' + (u.Telefono || '') + '</small>';
-                        html += '</div>';
-                        html += '<p class="mb-1">' + u.Email + '</p>';
-                        html += '</div>';
-                    });
-                    html += '</div>';
-                    document.getElementById('resultadosInvitados').innerHTML = html;
-                });
-        }, 400);
-    });
-
-    document.addEventListener('click', function (e) {
-        var btn = e.target.closest('.view-gallery-btn');
-        if (!btn) return;
-        var card = btn.closest('.card-evento');
-        if (!card) return;
-        var images = card.getAttribute('data-images') || '';
-        var modal = document.getElementById('galleryModal');
-        var body = document.getElementById('galleryModalBody');
-
-        if (!images) {
-            body.innerHTML = '<p class="text-muted">No hay imágenes para este evento.</p>';
-        } else {
-            var imgs = images.split(';').filter(function (s) { return s && s.trim().length > 0; });
-            if (imgs.length === 0) {
-                body.innerHTML = '<p class="text-muted">No hay imágenes para este evento.</p>';
-            } else {
-                var html = '<div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel"><div class="carousel-inner">';
-                imgs.forEach(function (img, idx) {
-                    html += '<div class="carousel-item ' + (idx === 0 ? 'active' : '') + '">';
-                    html += '<img src="/uploads/' + encodeURIComponent(img) + '" class="d-block w-100" style="max-height:500px; object-fit:cover;" />';
-                    html += '</div>';
-                });
-                html += '</div>';
-                html += '<button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">';
-                html += '<span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button>';
-                html += '<button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">';
-                html += '<span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>';
-                html += '</div>';
-                body.innerHTML = html;
-            }
-        }
-
-        var bm = new bootstrap.Modal(modal);
-        bm.show();
-    });
+    
 </script>
