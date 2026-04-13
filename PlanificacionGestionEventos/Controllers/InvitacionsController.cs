@@ -127,14 +127,24 @@ namespace PlanificacionGestionEventos.Controllers
         public async Task<IActionResult> Index()
         {
             var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var userEmail = User.FindFirstValue(System.Security.Claims.ClaimTypes.Email);
 
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
 
-            // 🔥 PRUEBA SIN FILTRO
             var invitaciones = await _context.Invitaciones
                 .Include(i => i.Evento)
                 .Include(i => i.Usuario)
+                .Where(i =>
+                    // 🔥 INVITACIONES QUE ME PERTENECEN
+                    i.UsuarioId == userId ||
+
+                    // 🔥 INVITACIONES POR CORREO (ANTES DE REGISTRARSE)
+                    (i.UsuarioId == null && i.CorreoInvitado == userEmail) ||
+
+                    // 🔥 INVITACIONES DE MIS EVENTOS (ORGANIZADOR)
+                    i.Evento != null && i.Evento.OrganizadorId == userId
+                )
                 .ToListAsync();
 
             return View(invitaciones);
