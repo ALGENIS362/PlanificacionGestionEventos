@@ -18,56 +18,85 @@ namespace PlanificacionGestionEventos.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var totalUsuarios = await _context.Usuarios.CountAsync();
-            var totalEventos = await _context.Eventos.CountAsync();
-            var totalInvitaciones = await _context.Invitaciones.CountAsync();
-            var confirmados = await _context.Invitaciones
-                .CountAsync(i => i.Estado == EstadoRSVP.Confirmado);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            ViewBag.TotalUsuarios = totalUsuarios;
+            if (string.IsNullOrEmpty(userIdClaim))
+                return View(new DashboardViewModel());
+
+            int userId = int.Parse(userIdClaim);
+
+            int totalUsuarios = 0;
+            int totalEventos = 0;
+            int totalInvitaciones = 0;
+            int confirmados = 0;
+
+            // 🔥 ADMIN VE TODO
+            if (User.IsInRole("Admin"))
+            {
+                totalUsuarios = await _context.Usuarios.CountAsync();
+                totalEventos = await _context.Eventos.CountAsync();
+                totalInvitaciones = await _context.Invitaciones.CountAsync();
+                confirmados = await _context.Invitaciones
+                    .CountAsync(i => i.Estado == EstadoRSVP.Confirmado);
+
+                var allEvents = await _context.Eventos
+                    .Include(e => e.Organizador)
+                    .ToListAsync();
+
+                ViewBag.TotalUsuarios = totalUsuarios;
+                ViewBag.TotalEventos = totalEventos;
+                ViewBag.TotalInvitaciones = totalInvitaciones;
+                ViewBag.Confirmados = confirmados;
+
+                return View(new DashboardViewModel { Eventos = allEvents });
+            }
+
+            // 🔥 ORGANIZADOR SOLO SUS EVENTOS
+            if (User.IsInRole("Organizador"))
+            {
+                var misEventos = await _context.Eventos
+                    .Where(e => e.OrganizadorId == userId)
+                    .ToListAsync();
+
+                var misEventoIds = misEventos.Select(e => e.EventoId).ToList();
+
+                totalEventos = misEventos.Count;
+
+                totalInvitaciones = await _context.Invitaciones
+                    .CountAsync(i => misEventoIds.Contains(i.EventoId));
+
+                confirmados = await _context.Invitaciones
+                    .CountAsync(i => misEventoIds.Contains(i.EventoId) && i.Estado == EstadoRSVP.Confirmado);
+
+                ViewBag.TotalUsuarios = 0; // opcional
+                ViewBag.TotalEventos = totalEventos;
+                ViewBag.TotalInvitaciones = totalInvitaciones;
+                ViewBag.Confirmados = confirmados;
+
+                return View(new DashboardViewModel { Eventos = misEventos });
+            }
+
+            // 🔥 PARTICIPANTE SOLO SUS INVITACIONES
+            var misInvitaciones = await _context.Invitaciones
+                .Where(i => i.UsuarioId == userId)
+                .ToListAsync();
+
+            var eventoIds = misInvitaciones.Select(i => i.EventoId).ToList();
+
+            var eventos = await _context.Eventos
+                .Where(e => eventoIds.Contains(e.EventoId))
+                .ToListAsync();
+
+            totalEventos = eventos.Count;
+            totalInvitaciones = misInvitaciones.Count;
+            confirmados = misInvitaciones.Count(i => i.Estado == EstadoRSVP.Confirmado);
+
+            ViewBag.TotalUsuarios = 0;
             ViewBag.TotalEventos = totalEventos;
             ViewBag.TotalInvitaciones = totalInvitaciones;
             ViewBag.Confirmados = confirmados;
 
-            // Build dashboard model depending on role
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
-            {
-                return View(new DashboardViewModel());
-            }
-
-            int userId = int.Parse(userIdClaim);
-
-            if (User.IsInRole("Admin"))
-            {
-                var allEvents = await _context.Eventos.Include(e => e.Organizador).ToListAsync();
-                var vm = new DashboardViewModel { Eventos = allEvents };
-                return View(vm);
-            }
-
-            if (User.IsInRole("Organizador"))
-            {
-                var myEvents = await _context.Eventos
-                    .Where(e => e.OrganizadorId == userId)
-                    .Include(e => e.Invitaciones)
-                    .ToListAsync();
-
-                var vm = new DashboardViewModel { Eventos = myEvents };
-                return View(vm);
-            }
-
-            var invitedEventIds = await _context.Invitaciones
-                .Where(i => i.UsuarioId == userId)
-                .Select(i => i.EventoId)
-                .ToListAsync();
-
-            var invitedEvents = await _context.Eventos
-                .Where(e => invitedEventIds.Contains(e.EventoId))
-                .Include(e => e.Organizador)
-                .ToListAsync();
-
-            var guestVm = new DashboardViewModel { Eventos = invitedEvents };
-            return View(guestVm);
+            return View(new DashboardViewModel { Eventos = eventos });
         }
     }
 }
