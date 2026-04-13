@@ -373,12 +373,14 @@ namespace PlanificacionGestionEventos.Controllers
                                 $"<p><strong>📅 Fecha:</strong> {evento.Fecha:d}</p>" +
                                 $"<p><strong>⏰ Hora:</strong> {evento.Hora}</p>" +
                                 $"<p><strong>📍 Lugar:</strong> {evento.Lugar}</p>" +
+                                $"<p><strong>🟢 Inicio:</strong> {evento.FechaInicio:dd/MM/yyyy HH:mm}</p>" +
+                                $"<p><strong>🔴 Fin:</strong> {evento.FechaFin:dd/MM/yyyy HH:mm}</p>" +
                                 $"<p><strong>📝 Descripción:</strong> {evento.Descripcion}</p>" +
                                 $"<p><strong>📂 Categoría:</strong> {evento.Categoria}</p>" +
                                 $"<p><strong>👥 Máx Invitados:</strong> {evento.MaximoInvitados}</p>" +
 
                                 $"<br/><br/>" +
-                        // 🔥 BOTONES
+
                             $"<a href='{acceptUrl}' style='padding:12px 20px; background:#22c55e; color:white; text-decoration:none; border-radius:6px; margin-right:10px; display:inline-block;'>✅ Aceptar</a>" +
                             $"<a href='{rejectUrl}' style='padding:12px 20px; background:#ef4444; color:white; text-decoration:none; border-radius:6px; display:inline-block;'>❌ Rechazar</a>";
                         }

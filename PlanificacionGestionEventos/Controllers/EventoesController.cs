@@ -161,6 +161,11 @@ namespace PlanificacionGestionEventos.Controllers
                 System.StringComparison.OrdinalIgnoreCase
             );
 
+            if (evento.FechaFin < evento.FechaInicio)
+            {
+                ModelState.AddModelError("", "La fecha fin no puede ser menor que la fecha inicio");
+            }
+
             if (ModelState.IsValid)
             {
                 // Si el usuario es Organizador, forzar el OrganizadorId al usuario actual
