@@ -4,10 +4,6 @@
 
     <h2>Gestión de Usuarios</h2>
 
-    <a asp-action="Create" class="btn btn-primary mb-3">
-        Crear Usuario
-    </a>
-
     <table class="table table-striped">
 
         <thead>
@@ -40,10 +36,6 @@
                             <a asp-action="Edit" asp-route-id="@item.Usuario?.UsuarioId" class="btn btn-success btn-sm">
                                 Editar
                             </a>
-
-                            <button type="button" class="btn btn-danger btn-sm btn-delete" data-id="@item.Usuario?.UsuarioId" data-name="@(item.Usuario?.NombreCompleto ?? item.Usuario?.Email ?? "usuario")">
-                                Eliminar
-                            </button>
                         </td>
                     </tr>
                 }
@@ -145,4 +137,3 @@
         })();
     </script>
 }
-</div>

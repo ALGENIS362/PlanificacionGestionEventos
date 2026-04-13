@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PlanificacionGestionEventos.Data;
 using PlanificacionGestionEventos.Models;
+using System.Security.Claims;
 
 namespace PlanificacionGestionEventos.Controllers
 {
@@ -18,18 +20,27 @@ namespace PlanificacionGestionEventos.Controllers
         // GET: Usuarios
         public async Task<IActionResult> Index()
         {
-            var usuarios = await (
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
+            var data = await (
                 from u in _context.Usuarios
                 join ur in _context.UsuariosRoles on u.UsuarioId equals ur.UsuarioId into userRoles
                 from ur in userRoles.DefaultIfEmpty()
                 join r in _context.Roles on ur.RoleId equals r.RoleId into roles
                 from r in roles.DefaultIfEmpty()
-                select new Models.UsuarioListViewModel
-                {
-                    Usuario = u,
-                    RoleName = r != null && r.Nombre != null ? r.Nombre : ""
-                }
-            ).ToListAsync();
+
+                where u.UsuarioId == userId
+                select new { u, r }
+             ).ToListAsync();
+
+            var usuarios = data.Select(x => new UsuarioListViewModel
+            {
+                Usuario = x.u,
+                RoleName = x.r?.Nombre ?? ""
+            }).ToList();
 
             return View(usuarios);
         }
@@ -42,6 +53,7 @@ namespace PlanificacionGestionEventos.Controllers
         }
 
         // POST: Usuarios/Create
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Models.UsuarioCreateViewModel model)
@@ -97,6 +109,15 @@ namespace PlanificacionGestionEventos.Controllers
         {
             if (id == null) return NotFound();
 
+            // 🔥 AQUÍ VA
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out int currentUserId))
+                return Unauthorized();
+
+            if (id != currentUserId)
+                return Unauthorized(); // 🔥 NO puede editar otro
+
             var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario == null) return NotFound();
 
@@ -108,16 +129,6 @@ namespace PlanificacionGestionEventos.Controllers
                 Telefono = usuario.Telefono
             };
 
-            var roleName = await _context.UsuariosRoles
-                .Include(ur => ur.Role)
-                .Where(ur => ur.UsuarioId == usuario.UsuarioId)
-                .Select(ur => ur.Role!.Nombre)
-                .FirstOrDefaultAsync();
-
-            vm.SelectedRole = roleName;
-
-            ViewData["Roles"] = new List<string> { "Organizador", "Participante" };
-
             return View(vm);
         }
 
@@ -128,9 +139,17 @@ namespace PlanificacionGestionEventos.Controllers
         {
             if (id != model.UsuarioId) return NotFound();
 
+            // 🔥 AQUÍ VA
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out int currentUserId))
+                return Unauthorized();
+
+            if (id != currentUserId)
+                return Unauthorized(); // 🔥 NO puede editar otro
+
             if (!ModelState.IsValid)
             {
-                ViewData["Roles"] = new List<string> { "Organizador", "Participante" };
                 return View(model);
             }
 
@@ -148,28 +167,6 @@ namespace PlanificacionGestionEventos.Controllers
             }
 
             _context.Update(usuario);
-            await _context.SaveChangesAsync();
-
-            // 🔥 ACTUALIZAR ROL
-            var existingRoles = _context.UsuariosRoles.Where(ur => ur.UsuarioId == usuario.UsuarioId);
-            _context.UsuariosRoles.RemoveRange(existingRoles);
-            await _context.SaveChangesAsync();
-
-            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Nombre == model.SelectedRole);
-
-            if (role == null)
-            {
-                role = new Role { Nombre = model.SelectedRole };
-                _context.Roles.Add(role);
-                await _context.SaveChangesAsync();
-            }
-
-            _context.UsuariosRoles.Add(new UsuarioRole
-            {
-                UsuarioId = usuario.UsuarioId,
-                RoleId = role.RoleId
-            });
-
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));

@@ -50,27 +50,6 @@
                             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="SelectedRole" class="form-label">Rol</label>
-                            <select asp-for="SelectedRole" class="form-select" required>
-                                @if (ViewData["Roles"] is IEnumerable<string> roles)
-                                {
-                                    foreach (var r in roles)
-                                    {
-                                        if (Model.SelectedRole == r)
-                                        {
-                                            <option value="@r" selected="selected">@r</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@r">@r</option>
-                                        }
-                                    }
-                                }
-                            </select>
-                            <span asp-validation-for="SelectedRole" class="text-danger"></span>
-                        </div>
-
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Guardar</button>
                             <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
