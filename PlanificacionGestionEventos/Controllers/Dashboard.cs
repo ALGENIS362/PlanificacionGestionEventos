@@ -25,7 +25,7 @@ namespace PlanificacionGestionEventos.Controllers
 
             int userId = int.Parse(userIdClaim);
 
-            int totalUsuarios = 0;
+            int rechazados = 0;
             int totalEventos = 0;
             int totalInvitaciones = 0;
             int confirmados = 0;
@@ -33,9 +33,13 @@ namespace PlanificacionGestionEventos.Controllers
             // 🔥 ADMIN VE TODO
             if (User.IsInRole("Admin"))
             {
-                totalUsuarios = await _context.Usuarios.CountAsync();
+                rechazados = await _context.Invitaciones
+                    .CountAsync(i => i.Estado == EstadoRSVP.Rechazado);
+
                 totalEventos = await _context.Eventos.CountAsync();
+
                 totalInvitaciones = await _context.Invitaciones.CountAsync();
+
                 confirmados = await _context.Invitaciones
                     .CountAsync(i => i.Estado == EstadoRSVP.Confirmado);
 
@@ -43,7 +47,7 @@ namespace PlanificacionGestionEventos.Controllers
                     .Include(e => e.Organizador)
                     .ToListAsync();
 
-                ViewBag.TotalUsuarios = totalUsuarios;
+                ViewBag.Rechazados = rechazados;
                 ViewBag.TotalEventos = totalEventos;
                 ViewBag.TotalInvitaciones = totalInvitaciones;
                 ViewBag.Confirmados = confirmados;
@@ -68,7 +72,10 @@ namespace PlanificacionGestionEventos.Controllers
                 confirmados = await _context.Invitaciones
                     .CountAsync(i => misEventoIds.Contains(i.EventoId) && i.Estado == EstadoRSVP.Confirmado);
 
-                ViewBag.TotalUsuarios = 0; // opcional
+                rechazados = await _context.Invitaciones
+                    .CountAsync(i => misEventoIds.Contains(i.EventoId) && i.Estado == EstadoRSVP.Rechazado);
+
+                ViewBag.Rechazados = rechazados;
                 ViewBag.TotalEventos = totalEventos;
                 ViewBag.TotalInvitaciones = totalInvitaciones;
                 ViewBag.Confirmados = confirmados;
@@ -90,8 +97,9 @@ namespace PlanificacionGestionEventos.Controllers
             totalEventos = eventos.Count;
             totalInvitaciones = misInvitaciones.Count;
             confirmados = misInvitaciones.Count(i => i.Estado == EstadoRSVP.Confirmado);
+            rechazados = misInvitaciones.Count(i => i.Estado == EstadoRSVP.Rechazado);
 
-            ViewBag.TotalUsuarios = 0;
+            ViewBag.Rechazados = rechazados;
             ViewBag.TotalEventos = totalEventos;
             ViewBag.TotalInvitaciones = totalInvitaciones;
             ViewBag.Confirmados = confirmados;
