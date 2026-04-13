@@ -72,17 +72,9 @@
                     <input type="number" name="MaximoInvitados" class="form-control" />
                 </div>
 
-                <div class="form-group">
+                <div class="mb-3">
                     <label>Estado</label>
-                    <select name="Estado" class="form-control">
-                        @if (ViewData["Estados"] is IEnumerable<string> estados)
-                        {
-                            foreach (var e in estados)
-                            {
-                                <option value="@e">@e</option>
-                            }
-                        }
-                    </select>
+                    <input type="text" class="form-control" value="Activo" readonly />
                 </div>
 
                 <div class="form-group">

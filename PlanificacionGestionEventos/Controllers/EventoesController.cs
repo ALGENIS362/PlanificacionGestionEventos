@@ -145,8 +145,6 @@ namespace PlanificacionGestionEventos.Controllers
 
             ViewBag.CurrentOrganizadorId = userId;
 
-            ViewData["Estados"] = Enum.GetNames(typeof(Models.EventoEstado)).ToList();
-
             return View();
         }
 
@@ -286,6 +284,8 @@ namespace PlanificacionGestionEventos.Controllers
                 // Mantener compatibilidad: rellenar Fecha y Hora con FechaInicio
                 evento.Fecha = evento.FechaInicio.Date;
                 evento.Hora = evento.FechaInicio.ToString("HH:mm");
+
+                evento.Estado = EventoEstado.Activo;
 
                 _context.Add(evento);
                 await _context.SaveChangesAsync();

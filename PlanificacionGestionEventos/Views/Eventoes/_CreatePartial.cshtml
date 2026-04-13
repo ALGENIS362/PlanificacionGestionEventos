@@ -64,17 +64,7 @@
 
     <div class="mb-3">
         <label>Estado</label>
-        <select asp-for="Estado" class="form-control">
-            @if (ViewData["Estados"] is IEnumerable<string> estados)
-            {
-                foreach (var e in estados)
-                {
-                    var enumVal = (int)Enum.Parse(typeof(PlanificacionGestionEventos.Models.EventoEstado), e);
-                    <option value="@enumVal">@e</option>
-                }
-            }
-        </select>
-        <span asp-validation-for="Estado" class="text-danger"></span>
+        <input type="text" class="form-control" value="Activo" readonly />
     </div>
 
     @if (ViewBag.CurrentOrganizadorId != null)
