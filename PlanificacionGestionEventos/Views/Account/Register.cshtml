@@ -9,86 +9,177 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>Registro</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        body { background:#f5f7fa; }
-        .login-card { width: 420px; border-radius: 12px; }
-        .brand-title { color: #0f1c2e; font-weight:700; }
-        .btn-primary {
-            color: #fff;
-            background-color: #1b6ec2;
-            border-color: #1861ac;
+        body {
+            background: linear-gradient(135deg, #0f172a, #020617);
+            font-family: 'Segoe UI', sans-serif;
+            color: #e2e8f0;
         }
+
+        /* CONTENEDOR */
+        .center-container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* CARD PRO */
+        .card-pro {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            animation: fadeIn 0.6s ease;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h4 {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        p {
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        /* INPUTS */
+        .form-control {
+            background: #020617;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+            .form-control:focus {
+                border-color: #3b82f6;
+                box-shadow: 0 0 10px rgba(59,130,246,0.5);
+                background: #020617;
+                color: white;
+            }
+
+        .form-floating label {
+            color: #94a3b8;
+        }
+
+        /* SELECT */
+        .form-select {
+            background: #020617;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 10px;
+        }
+
+        /* BOTÓN */
+        .btn-pro {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+            .btn-pro:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(59,130,246,0.4);
+            }
+
+        /* LINKS */
+        a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
     </style>
 </head>
+
 <body>
 
-    <div class="d-flex align-items-center justify-content-center min-vh-100">
-        <div class="card login-card shadow-sm">
-            <div class="card-body p-4">
-                <div class="text-center mb-3">
-                    <h4 class="brand-title">Crear cuenta</h4>
-                    <p class="text-muted mb-0">Regístrate para acceder al sistema</p>
+    <div class="center-container">
+
+        <div class="card-pro">
+
+            <h4>🚀 Crear cuenta</h4>
+            <p>Regístrate para acceder al sistema</p>
+
+            <form asp-action="Register" method="post" novalidate>
+
+                <input type="hidden" name="returnToken" value="@ViewData["ReturnToken"]" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Name" class="form-control" id="inputName" placeholder="Nombre" />
+                    <label>Nombre</label>
                 </div>
 
-                <form asp-action="Register" method="post" novalidate>
-                    <input type="hidden" name="returnToken" value="@ViewData["ReturnToken"]" />
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                <div class="form-floating mb-3">
+                    <input asp-for="Email" class="form-control" id="inputEmail" placeholder="Correo" />
+                    <label>Correo</label>
+                </div>
 
-                    <div class="form-floating mb-3">
-                        <input asp-for="Name" class="form-control" id="inputName" placeholder="Nombre" />
-                        <label for="inputName">Nombre</label>
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                    </div>
+                <div class="form-floating mb-3">
+                    <input asp-for="Telefono" class="form-control" id="inputTelefono" placeholder="809-123-4567" maxlength="12" />
+                    <label>Teléfono</label>
+                </div>
 
-                    <div class="form-floating mb-3">
-                        <input asp-for="Email" class="form-control" id="inputEmail" placeholder="Correo" />
-                        <label for="inputEmail">Correo</label>
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">Registrarse como</label>
+                    <select asp-for="Role" class="form-select">
+                        <option value="Invitado">Invitado</option>
+                        <option value="Organizador">Organizador</option>
+                    </select>
+                </div>
 
-                    <div class="form-floating mb-3">
-                        <input asp-for="Telefono" class="form-control" id="inputTelefono" placeholder="809-123-4567" maxlength="12" />
-                        <label for="inputTelefono">Teléfono</label>
-                        <span asp-validation-for="Telefono" class="text-danger"></span>
-                    </div>
+                <div class="form-floating mb-3">
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Contraseña" />
+                    <label>Contraseña</label>
+                </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Role" class="form-label">Registrarse como</label>
-                        <select asp-for="Role" class="form-select">
-                            <option value="Invitado">Invitado</option>
-                            <option value="Organizador">Organizador</option>
-                        </select>
-                        <span asp-validation-for="Role" class="text-danger"></span>
-                    </div>
+                <div class="form-floating mb-3">
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirmar contraseña" />
+                    <label>Confirmar contraseña</label>
+                </div>
 
-                    <div class="form-floating mb-3">
-                        <input asp-for="Password" type="password" class="form-control" id="inputPassword" placeholder="Contraseña" />
-                        <label for="inputPassword">Contraseña</label>
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
+                <button type="submit" class="btn-pro w-100 mb-3">
+                    💾 Crear cuenta
+                </button>
 
-                    <div class="form-floating mb-3">
-                        <input asp-for="ConfirmPassword" type="password" class="form-control" id="inputConfirmPassword" placeholder="Confirmar contraseña" />
-                        <label for="inputConfirmPassword">Confirmar contraseña</label>
-                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                    </div>
+                <div class="d-flex justify-content-between small">
+                    <a asp-controller="Home" asp-action="Index">⬅ Volver</a>
+                    <a asp-action="Login">¿Ya tienes cuenta?</a>
+                </div>
 
-                    <button type="submit" class="btn btn-primary w-100 mb-2">Crear cuenta</button>
-
-                    <div class="d-flex justify-content-between small text-muted">
-                        <a asp-controller="Home" asp-action="Index">Volver</a>
-                        <a asp-action="Login">¿Ya tienes cuenta? Inicia sesión</a>
-                    </div>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    @section Scripts {
-        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    }
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
@@ -111,8 +202,10 @@
 
                     if (value.length === 12) {
                         input.style.borderColor = "#22c55e";
+                        input.style.boxShadow = "0 0 8px rgba(34,197,94,0.5)";
                     } else {
                         input.style.borderColor = "#ef4444";
+                        input.style.boxShadow = "0 0 8px rgba(239,68,68,0.5)";
                     }
                 });
             }

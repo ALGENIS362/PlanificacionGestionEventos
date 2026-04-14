@@ -186,7 +186,7 @@ namespace PlanificacionGestionEventos.Controllers
                 return RedirectToAction("Accept", "Invitacions", new { t = returnToken });
             }
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Dashboard");
         }
 
         [HttpPost]
