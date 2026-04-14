@@ -111,6 +111,11 @@ namespace PlanificacionGestionEventos.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            if (!string.IsNullOrEmpty(model.Telefono))
+            {
+                model.Telefono = model.Telefono.Replace("-", "");
+            } 
+
             // check if email already exists
             var existing = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
             var hasher = new PasswordHasher<Usuario>();

@@ -48,7 +48,7 @@
                     </div>
 
                     <div class="form-floating mb-3">
-                        <input asp-for="Telefono" class="form-control" id="inputTelefono" placeholder="Teléfono" />
+                        <input asp-for="Telefono" class="form-control" id="inputTelefono" placeholder="809-123-4567" maxlength="12" />
                         <label for="inputTelefono">Teléfono</label>
                         <span asp-validation-for="Telefono" class="text-danger"></span>
                     </div>
@@ -89,5 +89,35 @@
     @section Scripts {
         @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     }
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            var input = document.getElementById('inputTelefono');
+
+            if (input) {
+                input.addEventListener('input', function (e) {
+
+                    let value = e.target.value.replace(/\D/g, '');
+
+                    if (value.length > 10) value = value.slice(0, 10);
+
+                    if (value.length > 6) {
+                        value = value.replace(/(\d{3})(\d{3})(\d{1,4})/, '$1-$2-$3');
+                    } else if (value.length > 3) {
+                        value = value.replace(/(\d{3})(\d{1,3})/, '$1-$2');
+                    }
+
+                    e.target.value = value;
+
+                    if (value.length === 12) {
+                        input.style.borderColor = "#22c55e";
+                    } else {
+                        input.style.borderColor = "#ef4444";
+                    }
+                });
+            }
+
+        });
+    </script>
 </body>
 </html>

@@ -1,10 +1,109 @@
 ﻿@model IEnumerable<PlanificacionGestionEventos.Models.UsuarioListViewModel>
 
+<style>
+    body {
+        background-color: #0f172a;
+        color: #e2e8f0;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+        margin-top: 40px;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: bold;
+    }
+
+    /* TABLA MODERNA */
+    .table-modern {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 12px;
+        background: #1e293b;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+
+        .table-modern thead {
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            color: white;
+        }
+
+        .table-modern th {
+            padding: 14px;
+            text-align: center;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .table-modern td {
+            padding: 14px;
+            text-align: center;
+            border-top: 1px solid #334155;
+        }
+
+        .table-modern tbody tr {
+            transition: 0.3s;
+        }
+
+            .table-modern tbody tr:hover {
+                background: #334155;
+                transform: scale(1.01);
+            }
+
+    /* BOTONES */
+    .btn-edit {
+        background: #22c55e;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        margin-right: 5px;
+        text-decoration: none; /* 🔥 QUITA LA LÍNEA */
+        display: inline-block;
+    }
+
+        .btn-edit:hover {
+            background: #16a34a;
+            text-decoration: none; /* 🔥 por si acaso */
+            color: white;
+        }
+
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+    /* MODAL */
+    .modal-content {
+        background: #1e293b;
+        color: white;
+        border-radius: 12px;
+    }
+
+    .btn-close {
+        filter: invert(1);
+    }
+
+</style>
+
 <div class="container">
 
-    <h2>Gestión de Usuarios</h2>
+    <h2>👥 Gestión de Usuarios</h2>
 
-    <table class="table table-striped">
+    <table class="table-modern">
 
         <thead>
             <tr>
@@ -23,117 +122,84 @@
                 foreach (var item in Model)
                 {
                     <tr>
-
                         <td>@(item.Usuario?.NombreCompleto ?? "Sin nombre")</td>
-
                         <td>@(item.Usuario?.Email ?? "Sin email")</td>
-
-                        <td>@(item.Usuario?.Telefono ?? "-")</td>
-
+                        <td>
+                        @(item.Usuario?.Telefono != null && item.Usuario.Telefono.Length == 10
+                        ? item.Usuario.Telefono.Insert(3, "-").Insert(7, "-")
+                        : item.Usuario?.Telefono ?? "-")
+                        </td>
                         <td>@item.RoleName</td>
 
                         <td>
-                            <a asp-action="Edit" asp-route-id="@item.Usuario?.UsuarioId" class="btn btn-success btn-sm">
-                                Editar
+                            <a asp-action="Edit" asp-route-id="@item.Usuario?.UsuarioId" class="btn-edit">
+                                ✏️Editar
                             </a>
                         </td>
                     </tr>
                 }
             }
+
         </tbody>
     </table>
 </div>
 
-<!-- Modal de confirmación de eliminación -->
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar eliminación</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p id="confirmDeleteMessage">¿Estás seguro de que deseas eliminar este usuario?</p>
-      </div>
-      <div class="modal-footer">
-        <form asp-action="Delete" method="post" id="confirmDeleteForm">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="id" id="confirmDeleteId" value="" />
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
-        </form>
-      </div>
+<!-- MODAL -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">⚠ Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p id="confirmDeleteMessage"></p>
+            </div>
+
+            <div class="modal-footer">
+                <form asp-action="Delete" method="post" id="confirmDeleteForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="confirmDeleteId" />
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="btn btn-danger">
+                        Eliminar
+                    </button>
+                </form>
+            </div>
+
+        </div>
     </div>
-  </div>
 </div>
 
 @section Scripts {
     <script>
         (function () {
-            var deleteButtons = document.querySelectorAll('.btn-delete');
-            var modalEl = document.getElementById('confirmDeleteModal');
-            var bsModal = null;
-            if (modalEl) {
-                bsModal = new bootstrap.Modal(modalEl);
-            }
 
-            var form = document.getElementById('confirmDeleteForm');
+            var modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
             var idInput = document.getElementById('confirmDeleteId');
-            var messageEl = document.getElementById('confirmDeleteMessage');
+            var message = document.getElementById('confirmDeleteMessage');
 
-            deleteButtons.forEach(function (btn) {
-                btn.addEventListener('click', function (e) {
+            document.querySelectorAll('.btn-delete-trigger').forEach(btn => {
+
+                btn.addEventListener('click', () => {
+
                     var id = btn.getAttribute('data-id');
                     var name = btn.getAttribute('data-name');
-                    if (messageEl) {
-                        messageEl.textContent = '¿Estás seguro de que deseas eliminar al usuario "' + name + '"?';
-                    }
-                    if (idInput) {
-                        idInput.value = id;
-                    }
-                    if (form) {
-                        form.setAttribute('data-trigger-id', id);
-                    }
-                    if (bsModal) bsModal.show();
+
+                    idInput.value = id;
+                    message.textContent = '¿Seguro que deseas eliminar a "' + name + '"?';
+
+                    modal.show();
                 });
+
             });
 
-            if (form) {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    var id = idInput ? idInput.value : null;
-                    var tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
-                    var token = tokenInput ? tokenInput.value : '';
-
-                    fetch(form.action, {
-                        method: 'POST',
-                        headers: {
-                            'RequestVerificationToken': token,
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        },
-                        body: new URLSearchParams({ id: id }).toString()
-                    }).then(function (resp) {
-                        if (!resp.ok) throw new Error('Network response was not ok');
-                        return resp.json();
-                    }).then(function (data) {
-                        if (data && data.success) {
-                            if (bsModal) bsModal.hide();
-                            var triggerBtn = document.querySelector('.btn-delete[data-id="' + id + '"]');
-                            if (triggerBtn) {
-                                var row = triggerBtn.closest('tr');
-                                if (row) row.remove();
-                            }
-                        } else {
-                            alert((data && data.message) ? data.message : 'Error al eliminar');
-                        }
-                    }).catch(function (err) {
-                        console.error(err);
-                        alert('Error al eliminar el usuario');
-                    });
-                });
-            }
         })();
     </script>
 }

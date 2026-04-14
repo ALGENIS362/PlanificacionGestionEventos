@@ -64,6 +64,11 @@ namespace PlanificacionGestionEventos.Controllers
                 return View(model);
             }
 
+            if (!string.IsNullOrEmpty(model.Telefono))
+            {
+                model.Telefono = model.Telefono.Replace("-", "");
+            }
+
             var usuario = new Usuario
             {
                 NombreCompleto = model.NombreCompleto,
@@ -151,6 +156,11 @@ namespace PlanificacionGestionEventos.Controllers
             if (!ModelState.IsValid)
             {
                 return View(model);
+            }
+
+            if (!string.IsNullOrEmpty(model.Telefono))
+            {
+                model.Telefono = model.Telefono.Replace("-", "");
             }
 
             var usuario = await _context.Usuarios.FindAsync(id);
