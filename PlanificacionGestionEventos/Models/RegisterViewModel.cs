@@ -15,7 +15,8 @@ namespace PlanificacionGestionEventos.Models
         public string Email { get; set; } = "";
 
         [Display(Name = "Teléfono")]
-        [MaxLength(50)]
+        [Required(ErrorMessage = "El teléfono es obligatorio.")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "El teléfono debe tener exactamente 10 dígitos.")]
         public string? Telefono { get; set; }
 
         [Required]
