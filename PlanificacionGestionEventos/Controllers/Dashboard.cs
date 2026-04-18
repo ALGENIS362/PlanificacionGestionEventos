@@ -19,6 +19,7 @@ namespace PlanificacionGestionEventos.Controllers
         public async Task<IActionResult> Index()
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
 
             if (string.IsNullOrEmpty(userIdClaim))
                 return View(new DashboardViewModel());
@@ -59,6 +60,7 @@ namespace PlanificacionGestionEventos.Controllers
             if (User.IsInRole("Organizador"))
             {
                 var misEventos = await _context.Eventos
+                    .Include(e => e.Organizador)
                     .Where(e => e.OrganizadorId == userId)
                     .ToListAsync();
 
@@ -83,16 +85,27 @@ namespace PlanificacionGestionEventos.Controllers
                 return View(new DashboardViewModel { Eventos = misEventos });
             }
 
-            // 🔥 PARTICIPANTE SOLO SUS INVITACIONES
+            // 🔥 PARTICIPANTE - INCLUIR SUS INVITACIONES Y LAS INVITACIONES POR CORREO
             var misInvitaciones = await _context.Invitaciones
-                .Where(i => i.UsuarioId == userId)
+                .Where(i => 
+                    i.UsuarioId == userId ||  // Invitaciones asignadas al usuario después de aceptar
+                    (i.UsuarioId == null && i.CorreoInvitado == userEmail)  // Invitaciones por correo antes de registrarse/aceptar
+                )
                 .ToListAsync();
 
             var eventoIds = misInvitaciones.Select(i => i.EventoId).ToList();
 
             var eventos = await _context.Eventos
+                .Include(e => e.Organizador)
                 .Where(e => eventoIds.Contains(e.EventoId))
                 .ToListAsync();
+
+            // Crear un diccionario de estados RSVP por evento
+            var eventoEstados = new Dictionary<int, EstadoRSVP?>();
+            foreach (var inv in misInvitaciones)
+            {
+                eventoEstados[inv.EventoId] = inv.Estado;
+            }
 
             totalEventos = eventos.Count;
             totalInvitaciones = misInvitaciones.Count;
@@ -104,7 +117,7 @@ namespace PlanificacionGestionEventos.Controllers
             ViewBag.TotalInvitaciones = totalInvitaciones;
             ViewBag.Confirmados = confirmados;
 
-            return View(new DashboardViewModel { Eventos = eventos });
+            return View(new DashboardViewModel { Eventos = eventos, EventoEstados = eventoEstados });
         }
     }
 }

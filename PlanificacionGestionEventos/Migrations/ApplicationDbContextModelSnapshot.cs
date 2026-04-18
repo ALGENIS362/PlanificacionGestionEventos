@@ -76,7 +76,7 @@ namespace PlanificacionGestionEventos.Migrations
 
                     b.HasIndex("OrganizadorId");
 
-                    b.ToTable("Eventos");
+                    b.ToTable("Eventos", (string)null);
                 });
 
             modelBuilder.Entity("PlanificacionGestionEventos.Models.Invitacion", b =>
@@ -107,7 +107,7 @@ namespace PlanificacionGestionEventos.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Invitaciones");
+                    b.ToTable("Invitaciones", (string)null);
                 });
 
             modelBuilder.Entity("PlanificacionGestionEventos.Models.Role", b =>
@@ -125,7 +125,7 @@ namespace PlanificacionGestionEventos.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("PlanificacionGestionEventos.Models.Usuario", b =>
@@ -156,7 +156,7 @@ namespace PlanificacionGestionEventos.Migrations
 
                     b.HasKey("UsuarioId");
 
-                    b.ToTable("Usuarios");
+                    b.ToTable("Usuarios", (string)null);
                 });
 
             modelBuilder.Entity("PlanificacionGestionEventos.Models.UsuarioRole", b =>
@@ -171,7 +171,7 @@ namespace PlanificacionGestionEventos.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("UsuariosRoles");
+                    b.ToTable("UsuariosRoles", (string)null);
                 });
 
             modelBuilder.Entity("PlanificacionGestionEventos.Models.Evento", b =>

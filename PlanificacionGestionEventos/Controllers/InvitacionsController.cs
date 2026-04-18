@@ -8,6 +8,7 @@ using MimeKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using PlanificacionGestionEventos.Models;
+using PlanificacionGestionEventos.Services;
 using System.Security.Claims;
 using System.Text;
 
@@ -18,12 +19,14 @@ namespace PlanificacionGestionEventos.Controllers
         private readonly ApplicationDbContext _context;
         private readonly Microsoft.AspNetCore.DataProtection.IDataProtector _protector;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _config;
+        private readonly IGuestUserService _guestUserService;
 
-        public InvitacionsController(ApplicationDbContext context, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider protectorProvider, Microsoft.Extensions.Configuration.IConfiguration config)
+        public InvitacionsController(ApplicationDbContext context, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider protectorProvider, Microsoft.Extensions.Configuration.IConfiguration config, IGuestUserService guestUserService)
         {
             _context = context;
             _protector = protectorProvider.CreateProtector("InvitacionProtector-v1");
             _config = config;
+            _guestUserService = guestUserService;
         }
 
         [AllowAnonymous]
@@ -154,12 +157,18 @@ namespace PlanificacionGestionEventos.Controllers
         public async Task<IActionResult> MyEvents()
         {
             var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var userEmail = User.FindFirstValue(System.Security.Claims.ClaimTypes.Email);
+
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
 
             // Obtener eventos a los que el usuario fue invitado
+            // Incluir tanto invitaciones asignadas al usuario como invitaciones por correo
             var eventos = await _context.Invitaciones
-                .Where(i => i.UsuarioId == userId)
+                .Where(i => 
+                    i.UsuarioId == userId ||  // Invitaciones asignadas al usuario después de aceptar
+                    (i.UsuarioId == null && i.CorreoInvitado == userEmail)  // Invitaciones por correo antes de registrarse/aceptar
+                )
                 .Include(i => i.Evento)
                 .Select(i => i.Evento!)
                 .Where(e => e != null)
@@ -298,14 +307,16 @@ namespace PlanificacionGestionEventos.Controllers
                     u.Email.ToLower().Trim() == correo
                 );
 
-            // ✅ SOLO ASIGNAR SI EXISTE
+            // ✅ ASIGNAR USUARIO O USAR INVITADO ANÓNIMO
             if (usuario != null)
             {
                 invitacion.UsuarioId = usuario.UsuarioId;
             }
             else
             {
-                invitacion.UsuarioId = null; // 🔥 IMPORTANTE
+                // Asignar usuario "Invitado Anónimo" en lugar de null
+                var guestUser = await _guestUserService.GetOrCreateGuestUserAsync(_context);
+                invitacion.UsuarioId = guestUser.UsuarioId;
             }
 
             // ✅ ESTADO

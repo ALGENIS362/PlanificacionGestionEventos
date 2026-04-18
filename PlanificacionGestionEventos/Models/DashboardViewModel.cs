@@ -6,5 +6,6 @@ namespace PlanificacionGestionEventos.Models
     public class DashboardViewModel
     {
         public List<Evento> Eventos { get; set; } = new List<Evento>();
+        public Dictionary<int, EstadoRSVP?> EventoEstados { get; set; } = new Dictionary<int, EstadoRSVP?>();
     }
 }

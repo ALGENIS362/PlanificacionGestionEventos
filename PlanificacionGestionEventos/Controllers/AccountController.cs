@@ -37,6 +37,7 @@ namespace PlanificacionGestionEventos.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null, string? returnToken = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
+            ViewData["ReturnToken"] = returnToken;
             if (!ModelState.IsValid)
                 return View(model);
 
